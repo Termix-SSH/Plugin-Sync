@@ -55,6 +55,13 @@
         "icon": "Globe",
         "openFrom": ["host-context-menu"]
       }
+    ],
+    "panels": [
+      {
+        "id": "sync",
+        "titleKey": "sync.navTitle",
+        "icon": "Cloud"
+      }
     ]
   },
   "locales": "locales",

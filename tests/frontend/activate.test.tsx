@@ -6,6 +6,7 @@ import {
 } from "@termix-ssh/plugin-sdk/testing";
 import type { PluginManifest } from "@termix-ssh/plugin-sdk/manifest";
 import * as plugin from "../../src/frontend/index";
+import { setSyncStatus } from "../../src/frontend/sync/status";
 import manifestJson from "../../manifest.json";
 import locales from "../../locales/en.json";
 
@@ -60,8 +61,11 @@ describe(`${manifest.id} activate`, () => {
     ]);
     expect(rendered.registered.tabs()).toEqual(["sites", "site_terminal"]);
     expect(rendered.registered.railItems().map((item) => item.id)).toEqual([
+      "sync",
       "sites",
     ]);
+    expect(rendered.registered.panels()).toEqual(["sync"]);
+    expect(rendered.registered.onboardingSteps()).toEqual(["desktop"]);
   });
 
   it("shows an empty list of sites", async () => {
@@ -84,5 +88,27 @@ describe(`${manifest.id} activate`, () => {
     await waitFor(() => expect(screen.getByText("Berlin")).toBeTruthy());
     expect(screen.getAllByText("Connected").length).toBeGreaterThan(1);
     expect(screen.getByText(/2 hosts/)).toBeTruthy();
+  });
+});
+
+describe("the sync panel", () => {
+  it("invites an unlinked desktop to link a server", async () => {
+    const calls = {
+      get: vi.fn(async (url: string) => ({
+        data: url === "/link/status" ? { linked: false, entities: [] } : {},
+      })),
+      post: vi.fn(),
+      put: vi.fn(),
+      delete: vi.fn(),
+    };
+    rendered = await renderWithApp(plugin, {
+      manifest,
+      locales,
+      api: calls as never,
+    });
+    // Outside the desktop app nothing polls, so the status is handed in.
+    setSyncStatus({ linked: false, entities: [] });
+    rendered.renderPanel("sync");
+    expect(await screen.findByText(locales.sync.unlinkedTitle)).toBeTruthy();
   });
 });

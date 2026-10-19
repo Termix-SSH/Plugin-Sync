@@ -47,13 +47,18 @@ export async function activate(ctx: PluginContext) {
 
   const router = express.Router();
   router.use(createServerRouter(host, deviceStore, log));
-  // The account switcher talks to the plugin API, the protocol stays on /sync.
+  // The plugin's own screens talk to the plugin API, the protocol stays on /sync.
   const api = ctx.http.router<express.Router>();
   api.use(createAccountsRouter({ ctx, host, manager, webTable, log }));
   api.use(createSitesRouter(ctx, host, siteStore, log));
   registerSiteTerminal(ctx, siteStore, log);
-  if (host.embedded)
-    router.use(createClientRouter(host, manager, deviceId, log));
+  if (host.embedded) {
+    // The same routes answer on /sync for core and on the plugin API for the
+    // plugin's own screens.
+    const client = createClientRouter(host, manager, deviceId, log);
+    router.use(client);
+    api.use(client);
+  }
 
   ctx.sync.provide({
     handle: (req, res, next) => {
