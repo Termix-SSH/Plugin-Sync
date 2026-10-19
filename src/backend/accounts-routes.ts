@@ -129,7 +129,7 @@ export function createAccountsRouter({
    * /plugin-api/sync/accounts/switch:
    *   post:
    *     summary: Switch the active account
-   *     description: Desktop only. The app signs in as this account the next time it asks, so the app should reload after this. Data of the accounts never mixes.
+   *     description: Desktop only. Returns a session for that account and sets it as the cookie, so the app should store the token and reload after this. Data of the accounts never mixes.
    *     tags:
    *       - Sync
    *     requestBody:
@@ -159,7 +159,14 @@ export function createAccountsRouter({
       }
       await host.accounts.setActive(userId);
       await manager.applyActiveProxy().catch(() => {});
-      res.json({ success: true });
+      // The app is signed in as the old account until it holds this one's
+      // session, so the new session replaces the cookie and goes back as well.
+      const token = await host.sessions.issueDesktop(userId, {
+        days: 30,
+        deviceInfo: "Termix Desktop (local)",
+      });
+      host.sessions.setCookie(req, res, token);
+      res.json({ success: true, token });
     },
   );
 

@@ -152,6 +152,10 @@ describe("two linked servers on one desktop", () => {
       body: JSON.stringify({ userId: "account-2" }),
     });
     expect(response.status).toBe(200);
+    // The old session must not stay in place, or the app keeps the old user.
+    const body = await response.json();
+    expect(body.token).toBe(desktop.sessions.at(-1));
+    expect(body.token).toContain("account-2");
     expect(desktop.activeUser).toBe("account-2");
     expect((desktop.proxy.at(-1) as { serverUrl: string }).serverUrl).toBe(
       work.url,

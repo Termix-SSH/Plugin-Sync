@@ -38,12 +38,13 @@ const isDesktop = () =>
   typeof window !== "undefined" &&
   Boolean((window as { electronAPI?: unknown }).electronAPI);
 
-/** The app signs in again as whoever is now active. */
-function reloadApp(): void {
+/** The app starts again as whoever is now active. A token replaces the old one. */
+function reloadApp(token?: string): void {
   try {
-    localStorage.removeItem("jwt");
+    if (token) localStorage.setItem("jwt", token);
+    else localStorage.removeItem("jwt");
   } catch {
-    // Storage can be blocked; the cookie or a new auto session still decides.
+    // Storage can be blocked; the cookie still decides.
   }
   window.location.reload();
 }
@@ -211,8 +212,10 @@ function DesktopSwitcher() {
 
   async function switchTo(id: string) {
     try {
-      await api.post("/accounts/switch", { userId: id });
-      reloadApp();
+      const { data } = await api.post<{ token?: string }>("/accounts/switch", {
+        userId: id,
+      });
+      reloadApp(data.token);
     } catch (error) {
       toast.error(errorMessage(error));
     }
