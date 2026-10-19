@@ -1,19 +1,73 @@
 {
   "version": 1,
   "tables": {
-    "notes": {
+    "devices": {
       "columns": {
         "id": {
           "type": "id",
           "primaryKey": true,
           "notNull": true
         },
-        "userId": {
+        "ownerId": {
           "type": "refUser",
           "length": 255,
           "notNull": true
         },
-        "text": {
+        "deviceId": {
+          "type": "varchar",
+          "length": 100,
+          "notNull": true
+        },
+        "clientType": {
+          "type": "varchar",
+          "length": 20,
+          "notNull": true
+        },
+        "name": {
+          "type": "varchar",
+          "length": 100,
+          "notNull": true
+        },
+        "lastSeenAt": {
+          "type": "timestamp",
+          "notNull": true,
+          "defaultNow": true
+        }
+      },
+      "indexes": [
+        {
+          "name": "uq_p_sync_devices_owner_device",
+          "columns": [
+            "ownerId",
+            "deviceId"
+          ],
+          "unique": true
+        }
+      ]
+    },
+    "web_accounts": {
+      "columns": {
+        "id": {
+          "type": "id",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "ringId": {
+          "type": "varchar",
+          "length": 64,
+          "notNull": true
+        },
+        "ownerId": {
+          "type": "refUser",
+          "length": 255,
+          "notNull": true
+        },
+        "username": {
+          "type": "varchar",
+          "length": 100,
+          "notNull": true
+        },
+        "token": {
           "type": "text",
           "notNull": true
         },
@@ -25,8 +79,129 @@
       },
       "indexes": [
         {
-          "name": "idx_p_hello_world_notes_user_id",
-          "columns": ["userId"]
+          "name": "uq_p_sync_web_accounts_ring_owner",
+          "columns": [
+            "ringId",
+            "ownerId"
+          ],
+          "unique": true
+        },
+        {
+          "name": "idx_p_sync_web_accounts_ring",
+          "columns": [
+            "ringId"
+          ]
+        }
+      ]
+    },
+    "sites": {
+      "columns": {
+        "id": {
+          "type": "id",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "type": "varchar",
+          "length": 100,
+          "notNull": true
+        },
+        "baseUrl": {
+          "type": "varchar",
+          "length": 255,
+          "notNull": true
+        },
+        "apiKey": {
+          "type": "text",
+          "notNull": true
+        },
+        "options": {
+          "type": "text"
+        },
+        "status": {
+          "type": "varchar",
+          "length": 20,
+          "notNull": true
+        },
+        "lastError": {
+          "type": "text"
+        },
+        "lastSeenAt": {
+          "type": "timestamp"
+        },
+        "hostCount": {
+          "type": "integer"
+        },
+        "createdAt": {
+          "type": "timestamp",
+          "notNull": true,
+          "defaultNow": true
+        }
+      },
+      "indexes": [
+        {
+          "name": "uq_p_sync_sites_base_url",
+          "columns": [
+            "baseUrl"
+          ],
+          "unique": true
+        }
+      ]
+    },
+    "site_hosts": {
+      "columns": {
+        "id": {
+          "type": "id",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "siteId": {
+          "type": "integer",
+          "notNull": true
+        },
+        "remoteId": {
+          "type": "integer",
+          "notNull": true
+        },
+        "name": {
+          "type": "varchar",
+          "length": 255,
+          "notNull": true
+        },
+        "address": {
+          "type": "varchar",
+          "length": 255
+        },
+        "protocol": {
+          "type": "varchar",
+          "length": 40
+        },
+        "folder": {
+          "type": "varchar",
+          "length": 255
+        },
+        "tags": {
+          "type": "text"
+        },
+        "status": {
+          "type": "varchar",
+          "length": 20
+        }
+      },
+      "indexes": [
+        {
+          "name": "uq_p_sync_site_hosts_site_remote",
+          "columns": [
+            "siteId",
+            "remoteId"
+          ],
+          "unique": true
+        },
+        {
+          "name": "idx_p_sync_site_hosts_site",
+          "columns": [
+            "siteId"
+          ]
         }
       ]
     }

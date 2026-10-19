@@ -1,56 +1,63 @@
 {
-  "id": "hello-world",
-  "name": "Hello World",
+  "id": "sync",
+  "name": "Sync",
   "version": "1.0.0",
-  "description": "A minimal Termix plugin: one tab, one route, one setting and one table.",
+  "description": "Sync the desktop app with one or more servers, and manage other Termix servers as remote sites from a master.",
   "author": {
-    "name": "Your Name"
+    "name": "Termix"
   },
   "license": "Apache-2.0",
-  "repository": "https://github.com/your-org/termix-plugin-hello-world",
-  "docs": "https://github.com/your-org/termix-plugin-hello-world/tree/main/docs",
-  "category": "Productivity",
-  "icon": "Hand",
+  "repository": "https://github.com/Termix-SSH/Plugin-Sync",
+  "docs": "https://docs.termix.site/plugins/sync",
+  "category": "Infrastructure",
+  "icon": "RefreshCw",
   "features": [
-    "A tab opened from the sidebar",
-    "An admin setting",
-    "A table of greetings"
+    "Link the desktop app to a server and keep hosts, credentials and settings in sync, with an offline copy",
+    "Link several servers and accounts and switch between them, each with its own copy",
+    "Add other Termix servers as remote sites with an API key",
+    "See the hosts and health of every remote site in one place",
+    "Open sessions on remote site hosts, with the remote server doing the connecting",
+    "A documented sync protocol that other clients can use"
   ],
   "env": [],
   "engine": {
-    "termix": ">=26.10.0",
-    "api": "^1.2"
+    "termix": ">=26.10.3",
+    "api": "^1.8"
   },
-  "capabilities": ["db:own", "network:serve", "ui:surface"],
+  "capabilities": [
+    "sync:provide",
+    "db:own",
+    "network:outbound",
+    "network:serve",
+    "kv:own",
+    "secrets:own",
+    "ui:surface"
+  ],
   "contributes": {
-    "tabs": [
-      {
-        "id": "hello-world",
-        "titleKey": "tab.title",
-        "icon": "Hand",
-        "openFrom": ["rail"]
-      }
-    ],
     "permissions": [
       {
-        "name": "use",
-        "titleKey": "permissions.use.title",
-        "descriptionKey": "permissions.use.description",
-        "defaultRoles": ["admin", "user"]
+        "name": "sites",
+        "titleKey": "permissions.sites.title",
+        "descriptionKey": "permissions.sites.description",
+        "defaultRoles": ["admin"]
       }
     ],
-    "settings": {
-      "admin": [
-        {
-          "key": "greeting",
-          "type": "string",
-          "labelKey": "settings.admin.greeting.label",
-          "descriptionKey": "settings.admin.greeting.description",
-          "default": "Hello"
-        }
-      ]
-    }
+    "tabs": [
+      {
+        "id": "sites",
+        "titleKey": "sites.title",
+        "icon": "Globe",
+        "openFrom": ["rail"]
+      },
+      {
+        "id": "site_terminal",
+        "titleKey": "sites.terminal.title",
+        "icon": "Globe",
+        "openFrom": ["host-context-menu"]
+      }
+    ]
   },
   "locales": "locales",
-  "platforms": ["linux", "win32", "darwin"]
+  "platforms": ["linux", "win32", "darwin"],
+  "desktop": "local"
 }

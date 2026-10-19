@@ -2,9 +2,9 @@
 
 <img src="https://termix.site/img/logo.svg" width="120" alt="Termix Logo" />
 
-<h1>Termix Plugin Template</h1>
+<h1>Sync</h1>
 
-<p>A starter template for building your own Termix plugin</p>
+<p>Sync the desktop app with one or more servers, and manage other Termix servers as remote sites from a master</p>
 
 </div>
 
@@ -12,74 +12,22 @@
 
 ## Overview
 
-[Termix](https://github.com/Termix-SSH/Termix) is self-hosted, plugin-based server management, and every feature outside the core is a plugin. This template is a small Hello World plugin you can copy to start your own. It has one of each thing most plugins need, set up the same way as the official plugins.
+Sync links the desktop app to one or more Termix servers and keeps an offline copy of each. A server can also add other Termix servers as remote sites, list their hosts and open sessions on them.
+
+Read the [docs](https://docs.termix.site/plugins/sync) to set it up and use it.
 
 <br />
 
 ## Features
 
-- A tab opened from the sidebar
-- Two API routes behind a permission
-- An admin setting
-- A table with migrations for SQLite, PostgreSQL and MySQL
-- Backend and frontend tests
-- A release workflow that builds and publishes your plugin as a GitHub release, ready to submit to the [community registry](https://github.com/Termix-SSH/Termix-Registry)
+- Link the desktop app to a server and keep hosts, credentials and settings in sync, with an offline copy
+- Link several servers and accounts and switch between them, each with its own copy
+- Add other Termix servers as remote sites with an API key
+- See the hosts and health of every remote site in one place
+- Open sessions on remote site hosts, with the remote server doing the connecting
+- A documented sync protocol that other clients can use
 
 <br />
-
-## Getting Started
-
-You need Node 24 and a Termix server you are an admin on. The full guide is at [docs.termix.site/develop](https://docs.termix.site/develop).
-
-1. Click Use this template on GitHub to make your own repo, then clone it.
-2. In `manifest.json`, change `id`, `name`, `description`, `author`, `repository` and `docs`. The id is lowercase with dashes, like `my-plugin`. Then search the repo for `hello-world`, `hello_world` and `Hello World` and rename them to match: `package.json`, `locales/en.json`, the index name in `src/backend/tables.ts`, the API paths in `src/backend/routes.ts`, the tab id in `src/frontend/index.tsx` and the tests.
-3. Install the packages, then delete `migrations/` and write it again for your id:
-
-   ```bash
-   npm install
-   npm run migrations
-   ```
-
-4. In Termix, open Settings, then General, and turn on Plugin developer mode. Then make an API key under Settings, API keys.
-5. Build and install the plugin on your server. It rebuilds and reinstalls every time you save a file:
-
-   ```bash
-   npx termix-plugin dev --server http://localhost:30001 --key tmx_your_key
-   ```
-
-6. Run the tests and checks before you push:
-
-   ```bash
-   npm test
-   npm run typecheck
-   npm run validate
-   npm run build
-   ```
-
-7. Using an AI coding tool? It reads `AGENTS.md` (or `CLAUDE.md`), which points it to the full plugin guide that ships with the SDK. Keep the About this plugin section in `AGENTS.md` up to date.
-
-8. Write your docs in `docs/`. `docs/index.md` is the page people see first. Settings, permissions, environment variables and the API reference are added for you from `manifest.json` and the `@openapi` comments on your routes.
-
-When you change a table in `src/backend/tables.ts`, run `npm run migrations` to write the SQLite, PostgreSQL and MySQL migrations. `npm run pack` writes `<id>-<version>.tmxplug` of the built plugin, which you can install from a file in the Plugins tab while developer mode is on.
-
-## Releasing
-
-Work happens on a `dev-X.Y.Z` branch made from `main`, named after the version it will ship as. `main` only changes when a release merges a dev branch into it.
-
-Run the Release workflow by hand from the dev branch:
-
-- beta publishes `X.Y.Z-beta.N` (N counts up on its own). Termix only offers it to people who turned on Beta versions for this plugin. Run it as often as you like.
-- stable releases `X.Y.Z`, merges the dev branch into `main`, deletes the dev branch and removes that version's beta releases. Add a `## X.Y.Z` section to `CHANGELOG.md` first, it becomes the release notes.
-- overwrite releases the manifest version again from the current commit, replacing its files.
-- dry-run builds and packs without publishing anything.
-
-No secrets are needed. The workflow records GitHub build provenance for the `.tmxplug` so the community registry can check where it was built. If a dev branch changes files in `.github/workflows`, add a `TERMIX_PAT` secret (a token with `repo` and `workflow` scopes) so the release can push it to `main`.
-
-## Submitting to the community registry
-
-Once a version is released, you can submit it to the [Termix community registry](https://github.com/Termix-SSH/Termix-Registry). The Release run's summary shows the `sha256` to put in your submission. Every version is reviewed by a person before it is listed. See the [guide](https://docs.termix.site/develop/community-registry).
-
-Once it is listed, admins who turn on the community registry in Plugins, Registries can install it from Browse.
 
 ## Sponsors
 
@@ -127,11 +75,11 @@ For a paid sponsor spot, email [mail@termix.site](mailto:mail@termix.site).
 
 ## Support
 
-Bugs and ideas for the template go in this repo: [report a bug](https://github.com/Termix-SSH/Termix-Plugin-Template/issues/new?template=bug_report.yml) or [request a feature](https://github.com/Termix-SSH/Termix-Plugin-Template/issues/new?template=feature_request.yml).
+Bugs and ideas for Sync go in this repo: [report a bug](https://github.com/Termix-SSH/Plugin-Sync/issues/new?template=bug_report.yml) or [request a feature](https://github.com/Termix-SSH/Plugin-Sync/issues/new?template=feature_request.yml). Report an issue on the plugin's page in the Plugins tab fills in your versions for you.
 
 Problems with Termix itself (login, hosts, credentials, sharing, sync) go in the [Termix repo](https://github.com/Termix-SSH/Termix/issues/new/choose). Not sure where it goes? Open it there and it will be moved.
 
-Add as much detail as you can, in English if possible. For questions about building plugins, join the [Discord](https://discord.gg/jVQGdvHDrf) server.
+Add as much detail as you can, in English if possible. For questions, join the [Discord](https://discord.gg/jVQGdvHDrf) server.
 
 <br />
 

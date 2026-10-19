@@ -1,27 +1,68 @@
 {
   "plugin": {
-    "name": "Hello World",
-    "description": "A minimal Termix plugin: one tab, one route, one setting and one table."
-  },
-  "tab": {
-    "title": "Hello World",
-    "empty": "No notes yet.",
-    "placeholder": "Write a note",
-    "add": "Add",
-    "error": "Could not load or save notes."
+    "name": "Sync",
+    "description": "Sync the desktop app with one or more servers, and manage other Termix servers as remote sites from a master."
   },
   "permissions": {
-    "use": {
-      "title": "Use Hello World",
-      "description": "Open the Hello World tab and keep notes in it."
+    "sites": {
+      "title": "Manage remote sites",
+      "description": "Add, edit and remove remote Termix sites and open sessions on their hosts."
     }
   },
-  "settings": {
-    "admin": {
-      "greeting": {
-        "label": "Greeting",
-        "description": "Shown at the top of the Hello World tab."
-      }
+  "accounts": {
+    "title": "Accounts",
+    "switch": "Switch account",
+    "thisDevice": "This device",
+    "addServer": "Add a server",
+    "addAccount": "Add an account",
+    "remove": "Remove {{name}}",
+    "signOut": "Sign out {{name}}",
+    "removeTitle": "Remove this account?",
+    "removeDescription": "{{name}} and its copy of the data on this device will be deleted. The server keeps its data."
+  },
+  "sites": {
+    "title": "Sites",
+    "add": "Add site",
+    "addTitle": "Add a remote site",
+    "addHelp": "Make an API key on the other Termix server and paste it here. This server can then list its hosts and open sessions on them. The key's user there decides what you can see.",
+    "name": "Name",
+    "address": "Address",
+    "apiKey": "API key",
+    "apiKeyHint": "Made on the other server, in its API key settings.",
+    "added": "Site added",
+    "failed": "The site was added but could not be reached",
+    "refresh": "Refresh",
+    "remove": "Remove",
+    "removeTitle": "Remove this site?",
+    "removeDescription": "{{name}} is forgotten here. The API key stays valid on that server until you delete it there.",
+    "emptyTitle": "No remote sites",
+    "empty": "Add another Termix server to see its hosts and open sessions on them from here.",
+    "noHosts": "No hosts yet. The key's user may not have any.",
+    "online": "Online",
+    "offline": "Offline",
+    "openSession": "Open session",
+    "hostCount_one": "{{count}} host",
+    "hostCount_other": "{{count}} hosts",
+    "status": {
+      "pending": "Checking",
+      "ok": "Connected",
+      "error": "Unreachable"
+    },
+    "stats": {
+      "sites": "Sites",
+      "reachable": "Connected",
+      "unreachable": "Unreachable",
+      "hosts": "Hosts",
+      "online": "Online",
+      "offline": "Offline"
+    },
+    "terminal": {
+      "title": "Remote session",
+      "connecting": "Connecting through the remote site...",
+      "open": "Connected through the remote site",
+      "closed": "Session closed",
+      "failed": "The session failed",
+      "unavailable": "Sessions are not available right now"
     }
   }
 }

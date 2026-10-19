@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import {
   renderWithApp,
   type RenderedPluginApp,
@@ -18,53 +18,71 @@ afterEach(async () => {
   rendered = null;
 });
 
+const site = {
+  id: 1,
+  name: "Berlin",
+  baseUrl: "https://berlin.example.com",
+  status: "ok",
+  lastError: null,
+  lastSeenAt: "2026-10-19T10:00:00.000Z",
+  hostCount: 2,
+};
+
+function api(sites: unknown[]) {
+  return {
+    get: vi.fn(async (url: string) => {
+      if (url === "/sites") return { data: { sites } };
+      if (url === "/overview") {
+        return {
+          data: {
+            sites: sites.length,
+            reachable: sites.length,
+            unreachable: 0,
+            hosts: 2,
+            online: 1,
+            offline: 1,
+          },
+        };
+      }
+      return { data: { hosts: [] } };
+    }),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+  };
+}
+
 describe(`${manifest.id} activate`, () => {
-  it("registers the rail item and tab", async () => {
+  it("adds the account switcher, the sites tab and its rail item", async () => {
     rendered = await renderWithApp(plugin, { manifest, locales });
-    expect(rendered.registered.tabs()).toEqual(["hello-world"]);
-    expect(rendered.registered.railItems()).toEqual([
-      expect.objectContaining({
-        id: "hello-world",
-        permission: "hello-world.use",
-      }),
+    expect(rendered.registered.slot("shell.accountSwitcher")).toEqual([
+      "sync.accountSwitcher",
+    ]);
+    expect(rendered.registered.tabs()).toEqual(["sites", "site_terminal"]);
+    expect(rendered.registered.railItems().map((item) => item.id)).toEqual([
+      "sites",
     ]);
   });
 
-  it("shows the greeting and notes", async () => {
+  it("shows an empty list of sites", async () => {
     rendered = await renderWithApp(plugin, {
       manifest,
       locales,
-      api: {
-        get: vi.fn(async () => ({
-          data: {
-            greeting: "Hi there",
-            notes: [{ id: 1, text: "first", createdAt: "" }],
-          },
-        })),
-      } as never,
+      api: api([]) as never,
     });
-    rendered.renderTab("hello-world", { isVisible: true });
-    expect(await screen.findByText("Hi there")).toBeTruthy();
-    expect(screen.getByText("first")).toBeTruthy();
+    rendered.renderTab("sites");
+    expect(await screen.findByText("No remote sites")).toBeTruthy();
   });
 
-  it("shows an error when a note cannot be saved", async () => {
+  it("lists sites with the roll up", async () => {
     rendered = await renderWithApp(plugin, {
       manifest,
       locales,
-      api: {
-        get: vi.fn(async () => ({ data: { greeting: "Hello", notes: [] } })),
-        post: vi.fn(async () => {
-          throw new Error("offline");
-        }),
-      } as never,
+      api: api([site]) as never,
     });
-    rendered.renderTab("hello-world", { isVisible: true });
-    await screen.findByText(locales.tab.empty);
-    fireEvent.change(screen.getByPlaceholderText(locales.tab.placeholder), {
-      target: { value: "note" },
-    });
-    fireEvent.click(screen.getByText(locales.tab.add));
-    expect(await screen.findByText(locales.tab.error)).toBeTruthy();
+    rendered.renderTab("sites");
+    await waitFor(() => expect(screen.getByText("Berlin")).toBeTruthy());
+    expect(screen.getAllByText("Connected").length).toBeGreaterThan(1);
+    expect(screen.getByText(/2 hosts/)).toBeTruthy();
   });
 });
