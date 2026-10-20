@@ -39,4 +39,4 @@ A browser can be signed in to more than one account of the same server. Choose A
 | ---------- | ---------------------------------- |
 | sites      | Add, edit and remove remote sites. |
 
-See [Remote sites](./sites) and the [sync protocol](./protocol).
+See [Remote sites](sites.md) and the [sync protocol](protocol.md).
