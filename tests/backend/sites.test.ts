@@ -2,7 +2,8 @@ import express from "express";
 import path from "node:path";
 import type { AddressInfo } from "net";
 import type { Server } from "http";
-import WebSocket, { WebSocketServer } from "ws";
+import { WebSocketServer } from "ws";
+import type { PluginSshTransportProvider } from "@termix-ssh/plugin-sdk/backend";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createMockCtx,
@@ -12,7 +13,7 @@ import {
 } from "@termix-ssh/plugin-sdk/testing";
 import { createSites, type Sites } from "../../src/backend/sites.js";
 import { createSitesRouter } from "../../src/backend/sites-routes.js";
-import { registerSiteTerminal } from "../../src/backend/site-terminal.js";
+import { registerSiteTransport } from "../../src/backend/site-transport.js";
 import { siteHosts, sites as sitesTable } from "../../src/backend/tables.js";
 import { Side, createHost } from "./fake-host.js";
 
@@ -24,6 +25,8 @@ interface Remote {
   url: string;
   tickets: string[];
   frames: string[];
+  relayed: string[];
+  secrets: Array<Record<string, unknown>> | null;
   authHeaders: string[];
   hosts: Array<Record<string, unknown>>;
   statuses: Record<string, unknown>;
@@ -36,6 +39,10 @@ async function startRemote(): Promise<Remote> {
     url: "",
     tickets: [],
     frames: [],
+    relayed: [],
+    secrets: [
+      { exportId: 7, username: "root", password: "pw7", authType: "password" },
+    ],
     authHeaders: [],
     hosts: [
       {
@@ -71,6 +78,10 @@ async function startRemote(): Promise<Remote> {
     if (!found) return res.status(404).json({ error: "Not found" });
     res.json(found);
   });
+  app.get("/plugin-api/import-export/export", (_req, res) => {
+    if (!remote.secrets) return res.status(404).json({ error: "Not found" });
+    res.json({ hosts: remote.secrets });
+  });
   app.get("/host/status", (_req, res) => res.json(remote.statuses));
   app.post("/users/ws-ticket/api-key", (_req, res) => {
     const ticket = `ticket-${remote.tickets.length + 1}`;
@@ -87,16 +98,8 @@ async function startRemote(): Promise<Remote> {
       return;
     }
     wss.handleUpgrade(req, socket, head, (ws) => {
-      ws.on("message", (data) => {
-        const text = data.toString();
-        remote.frames.push(text);
-        const message = JSON.parse(text);
-        if (message.type === "input") {
-          ws.send(
-            JSON.stringify({ type: "data", data: `echo:${message.data}` }),
-          );
-        }
-      });
+      remote.relayed.push(req.url ?? "");
+      ws.on("message", (data) => ws.send(`echo:${data.toString()}`));
     });
   });
   remote.url = `http://127.0.0.1:${(remote.http.address() as AddressInfo).port}`;
@@ -125,6 +128,7 @@ beforeEach(async () => {
       "hosts:read",
       "hosts:write",
       "users:impersonate",
+      "ssh:transport",
     ],
     db: db.database,
     shareableRoles: [{ id: 5, name: "ops", displayName: "Ops" }],
@@ -216,7 +220,7 @@ describe("remote sites", () => {
       username: "root",
       folder: "Berlin / Prod",
       connectionType: "ssh",
-      enableSsh: false,
+      enableSsh: true,
       statusCheckEnabled: false,
     });
     expect(hosts.find((h) => h.name === "web1")?.folder).toBe("Berlin");
@@ -394,101 +398,90 @@ describe("remote sites", () => {
   });
 });
 
-describe("a session on a remote host", () => {
-  it("opens through the remote and only passes frames", async () => {
-    const { body } = await add();
-    registerSiteTerminal(mock.ctx, store, log);
-    const route = mock.wsRoutes.find((r) => r.path === "/site-terminal")!;
-
-    const wss = new WebSocketServer({ port: 0, host: "127.0.0.1" });
-    const received: string[] = [];
-    wss.on("connection", async (socket, request) => {
-      await (route.handler as Function)({
-        userId: "admin",
-        request,
-        socket,
-        clientIp: "127.0.0.1",
-        requestOrigin: "http://x",
-        isDataUnlocked: () => true,
-      });
+describe("logins and sessions on a remote host", () => {
+  it("copies the saved login and leaves hosts without one to ask", async () => {
+    await add();
+    const created = vi.mocked(mock.ctx.hosts.create).mock.calls.map(([i]) => i);
+    expect(created.find((i) => i.name === "db1")).toMatchObject({
+      authType: "password",
+      password: "pw7",
     });
-    await new Promise((resolve) => wss.once("listening", resolve));
-    const port = (wss.address() as AddressInfo).port;
-
-    const browser = new WebSocket(
-      `ws://127.0.0.1:${port}/?siteId=${body.site.id}&hostId=7&cols=100&rows=30`,
-    );
-    browser.on("message", (data) => received.push(data.toString()));
-    await new Promise((resolve) => browser.once("open", resolve));
-    await vi.waitFor(() => expect(remote.frames.length).toBeGreaterThan(0));
-
-    const connect = JSON.parse(remote.frames[0]);
-    expect(connect.type).toBe("connectToHost");
-    expect(connect.data).toMatchObject({
-      cols: 100,
-      rows: 30,
-      hostConfig: { id: 7, ip: "10.0.0.7", username: "root", credentialId: 3 },
-    });
-    expect(remote.tickets).toHaveLength(1);
-
-    browser.send(JSON.stringify({ type: "input", data: "ls" }));
-    await vi.waitFor(() =>
-      expect(received.some((frame) => frame.includes("echo:ls"))).toBe(true),
-    );
-    browser.send(
-      JSON.stringify({ type: "resize", data: { cols: 120, rows: 40 } }),
-    );
-    browser.send(
-      JSON.stringify({
-        type: "reconnect_with_credentials",
-        data: { password: "pw" },
-      }),
-    );
-    await vi.waitFor(() =>
-      expect(
-        remote.frames.some((frame) =>
-          frame.includes("reconnect_with_credentials"),
-        ),
-      ).toBe(true),
-    );
-    const retry = JSON.parse(
-      remote.frames.find((frame) =>
-        frame.includes("reconnect_with_credentials"),
-      )!,
-    );
-    expect(retry.data).toMatchObject({
-      cols: 120,
-      rows: 40,
-      password: "pw",
-      hostConfig: { id: 7 },
-    });
-    browser.close();
-    await new Promise((resolve) => wss.close(resolve));
+    expect(created.find((i) => i.name === "web1")?.authType).toBe("none");
   });
 
-  it("refuses a user without the permission", async () => {
-    const guarded = createMockCtx({
-      pluginId: "sync",
-      capabilities: ["network:serve"],
-      permissions: [],
+  it("copies a key login", async () => {
+    remote.secrets = [
+      { exportId: 7, key: "KEY", keyPassword: "kp", keyType: "ed25519" },
+    ];
+    await add();
+    const created = vi
+      .mocked(mock.ctx.hosts.create)
+      .mock.calls.map(([i]) => i)
+      .find((i) => i.name === "db1");
+    expect(created).toMatchObject({
+      authType: "key",
+      key: "KEY",
+      keyPassword: "kp",
+      keyType: "ed25519",
     });
-    registerSiteTerminal(guarded.ctx, store, log);
-    const route = guarded.wsRoutes.find((r) => r.path === "/site-terminal")!;
-    const frames: string[] = [];
-    const closed: number[] = [];
-    const socket = {
-      readyState: WebSocket.OPEN,
-      send: (data: string) => frames.push(data),
-      close: (code: number) => closed.push(code),
-      on: () => {},
-      once: () => {},
-    };
-    await (route.handler as Function)({
-      userId: "nobody",
-      request: { url: "/?siteId=1&hostId=1" },
-      socket,
+  });
+
+  it("still mirrors hosts when the remote can't export logins", async () => {
+    remote.secrets = null;
+    const { body } = await add();
+    expect(body.site.status).toBe("ok");
+    expect((await mirrored()).map((h) => h.name).sort()).toEqual([
+      "db1",
+      "web1",
+    ]);
+  });
+
+  it("makes the site folder and removes it with the site", async () => {
+    const ensure = vi.spyOn(mock.ctx.hosts.folders, "ensure");
+    const removeEmpty = vi.spyOn(mock.ctx.hosts.folders, "removeEmpty");
+    const { body } = await add();
+    expect(ensure).toHaveBeenCalledWith("Berlin", { icon: "cloud-cog" });
+    await fetch(`${appUrl}/sites/${body.site.id}`, { method: "DELETE" });
+    expect(removeEmpty).toHaveBeenCalledWith("Berlin");
+  });
+
+  it("claims only mirrored hosts and carries bytes through the relay", async () => {
+    let provider!: PluginSshTransportProvider;
+    vi.spyOn(mock.ctx.ssh.transports, "provide").mockImplementation((p) => {
+      provider = p;
+      return () => {};
     });
-    expect(closed).toEqual([1008]);
-    expect(remote.tickets).toEqual([]);
+    registerSiteTransport(mock.ctx, store);
+    await add();
+    await store.loadMirrored();
+    const db1 = (await mirrored()).find((h) => h.name === "db1")!;
+    expect(provider.claims(db1.id)).toBe(true);
+    expect(provider.claims(99999)).toBe(false);
+
+    const stream = await provider.open({
+      id: db1.id,
+      ip: "10.0.0.7",
+      port: 22,
+    });
+    const echoed = new Promise<string>((resolve) =>
+      stream.once("data", (chunk) => resolve(chunk.toString())),
+    );
+    stream.write("SSH-2.0-test");
+    expect(await echoed).toBe("echo:SSH-2.0-test");
+    expect(remote.relayed[0]).toBe("/plugin-ws/core/ssh-relay?hostId=7");
+    expect(remote.tickets).toHaveLength(1);
+    stream.destroy();
+  });
+
+  it("fails to open a host that is not from a site", async () => {
+    let provider!: PluginSshTransportProvider;
+    vi.spyOn(mock.ctx.ssh.transports, "provide").mockImplementation((p) => {
+      provider = p;
+      return () => {};
+    });
+    registerSiteTransport(mock.ctx, store);
+    await expect(
+      provider.open({ id: 4242, ip: "1.1.1.1", port: 22 }),
+    ).rejects.toThrow("not synced");
   });
 });

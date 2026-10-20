@@ -1,8 +1,7 @@
-import { Cloud, Globe, Monitor } from "lucide-react";
+import { Cloud, Monitor } from "lucide-react";
 import type { TermixApp } from "@termix-ssh/plugin-sdk/frontend";
 import { AccountSwitcher } from "./AccountSwitcher";
 import { SitesSetting } from "./SitesTab";
-import { SiteTerminal } from "./SiteTerminal";
 import { setApp } from "./app";
 import { RemoteStatusDot, remoteOf } from "./RemoteHost";
 import { SyncPanel } from "./sync/SyncPanel";
@@ -53,37 +52,10 @@ export function activate(app: TermixApp): void {
 
   app.registerSettingsComponent("sites", SitesSetting);
 
-  // A mirrored host opens its session through the remote site, so the host's
-  // own address is never dialled from here.
-  app.registerHostAction({
-    id: "site-session",
-    titleKey: "sites.openSession",
-    icon: Globe,
-    kind: "connect",
-    priority: 500,
-    when: (host) => remoteOf(host, "sync") !== null,
-    run: (host, shell) => {
-      const remote = remoteOf(host, "sync");
-      if (!remote) return;
-      shell.openTab(null, "site_terminal", {
-        label: host.name,
-        forceNewTab: true,
-        data: { siteId: remote.siteId, hostId: remote.remoteId },
-      });
-    },
-  });
-
   app.registerHostStatusIndicator({
     id: "site-status",
     when: (host) => remoteOf(host, "sync") !== null,
     component: RemoteStatusDot,
-  });
-
-  app.registerTab("site_terminal", SiteTerminal, {
-    icon: Globe,
-    titleKey: "sites.terminal.title",
-    hostless: true,
-    session: true,
   });
 }
 

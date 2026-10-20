@@ -39,7 +39,6 @@
     "removeDescription": "{{name}} is forgotten here. The API key stays valid on that server until you delete it there.",
     "emptyTitle": "No remote sites",
     "empty": "Add another Termix server and its SSH hosts show up in your host list.",
-    "openSession": "Open session",
     "hostCount_one": "{{count}} host",
     "hostCount_other": "{{count}} hosts",
     "status": {
@@ -55,15 +54,7 @@
       "online": "Online",
       "offline": "Offline"
     },
-    "terminal": {
-      "title": "Remote session",
-      "connecting": "Connecting through the remote site...",
-      "open": "Connected through the remote site",
-      "closed": "Session closed",
-      "failed": "The session failed",
-      "unavailable": "Sessions are not available right now"
-    },
-    "intro": "The SSH hosts of each site appear in your host list in a folder named after the site. They are read only here, change them on the site. Opening one starts the session through the site.",
+    "intro": "The SSH hosts of each site appear in your host list in a folder named after the site. They are read only here, change them on the site. Their logins are copied here, so files, tunnels and the other tools work too.",
     "edit": "Edit",
     "editTitle": "Edit site",
     "save": "Save",

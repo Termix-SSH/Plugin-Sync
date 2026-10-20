@@ -2,8 +2,9 @@
  * Remote sites: other Termix servers a master manages. The master holds an
  * API key made on each remote and keeps that remote's SSH hosts as real hosts
  * of its own, in a folder named after the site. They are locked, so the site
- * stays the source of truth, and a session on one is opened through the
- * remote: the remote does the connecting and the master only passes frames.
+ * stays the source of truth. The logins are copied too, so every tool works,
+ * and the SSH connection is carried through the remote relay socket: the
+ * remote reaches the host and the master only passes bytes.
  * What the key's user can see on the remote is all the master can mirror.
  */
 
@@ -49,6 +50,17 @@ interface RemoteHost {
   tags?: string[] | string | null;
   authType?: string | null;
   credentialId?: number | null;
+}
+
+/** A host's login as the remote's export carries it. */
+interface RemoteSecret {
+  exportId?: number;
+  username?: string | null;
+  authType?: string | null;
+  password?: string | null;
+  key?: string | null;
+  keyPassword?: string | null;
+  keyType?: string | null;
 }
 
 export interface SiteStores {
@@ -101,7 +113,9 @@ function parseRoles(value: unknown): number[] {
   }
 }
 
-/** Only SSH hosts can be opened through the remote's terminal. */
+/** Only SSH hosts can be carried through the remote's relay. */
+const SITE_FOLDER_ICON = "cloud-cog";
+
 function mirrorable(host: RemoteHost): boolean {
   const type = host.connectionType || "ssh";
   return type === "ssh" && host.enableSsh !== false && !!host.ip;
@@ -213,10 +227,31 @@ export function createSites(
     }
   }
 
+  /** Copies the saved login. A host with none asks for it when opened. */
+  function login(
+    secret?: RemoteSecret,
+  ): Pick<
+    PluginHostCreateInput,
+    "authType" | "password" | "key" | "keyPassword" | "keyType"
+  > {
+    if (secret?.key) {
+      return {
+        authType: "key",
+        key: secret.key,
+        keyPassword: secret.keyPassword || null,
+        keyType: secret.keyType || null,
+      };
+    }
+    if (secret?.password)
+      return { authType: "password", password: secret.password };
+    return { authType: "none" };
+  }
+
   function desired(
     site: { id: number; name: string },
     remote: RemoteHost,
     status: string | null,
+    secret?: RemoteSecret,
   ): PluginHostCreateInput {
     const folder = remote.folder
       ? `${site.name} / ${remote.folder}`
@@ -225,12 +260,11 @@ export function createSites(
       name: String(remote.name || remote.ip).slice(0, 255),
       ip: String(remote.ip),
       port: remote.port ?? 22,
-      username: String(remote.username ?? ""),
-      authType: "none",
+      username: String(secret?.username || remote.username || ""),
+      ...login(secret),
       connectionType: "ssh",
-      // The master never connects itself, so tools that need a direct SSH
-      // connection stay off and the remote's own checks are not repeated here.
-      enableSsh: false,
+      enableSsh: true,
+      // The remote checks status, and the dot comes from its answer.
       statusCheckEnabled: false,
       folder,
       tags: parseTags(remote.tags),
@@ -256,6 +290,7 @@ export function createSites(
     row: any,
     remoteHosts: RemoteHost[],
     statuses: Record<string, unknown>,
+    secrets: Map<number, RemoteSecret>,
   ): Promise<number> {
     const client = await db();
     const roles = parseRoles(row.shareRoles);
@@ -270,10 +305,13 @@ export function createSites(
     let failed = 0;
 
     await ctx.asUser(row.ownerId, async () => {
+      await ctx.hosts.folders
+        .ensure(row.name, { icon: SITE_FOLDER_ICON })
+        .catch(() => {});
       for (const remote of remoteHosts.filter(mirrorable).slice(0, 5000)) {
         seen.add(remote.id);
         const status = statusOf(statuses[String(remote.id)]);
-        const input = desired(row, remote, status);
+        const input = desired(row, remote, status, secrets.get(remote.id));
         const signature = signatureOf(input, roles);
         const existing = byRemote.get(remote.id);
         try {
@@ -336,6 +374,29 @@ export function createSites(
     return seen.size;
   }
 
+  /**
+   * The key's own hosts with their logins. It needs the import and export
+   * plugin on the remote. Without it hosts are mirrored with no saved login.
+   */
+  async function secretsOf(row: {
+    baseUrl: string;
+    apiKey: string;
+  }): Promise<Map<number, RemoteSecret>> {
+    try {
+      const out = await call<{ hosts?: RemoteSecret[] }>(
+        row,
+        "/plugin-api/import-export/export",
+      );
+      return new Map(
+        (out.hosts ?? [])
+          .filter((entry) => typeof entry.exportId === "number")
+          .map((entry) => [entry.exportId as number, entry]),
+      );
+    } catch {
+      return new Map();
+    }
+  }
+
   /** Reads the remote's hosts and status and mirrors them. */
   async function refresh(id: number): Promise<SiteRecord> {
     const row = await getRow(id);
@@ -352,7 +413,7 @@ export function createSites(
       } catch {
         // Hosts are still worth mirroring without their status.
       }
-      await mirror(row, remote, statuses);
+      await mirror(row, remote, statuses, await secretsOf(row));
       await client
         .update(stores.sites)
         .set({
@@ -435,9 +496,16 @@ export function createSites(
         .where(eq(stores.hosts.siteId, id));
       if (input.shareRoles) await reshare(id, input.shareRoles);
     }
-    return input.apiKey || input.name || input.shareRoles
-      ? refresh(id)
-      : view((await getRow(id))!);
+    if (!(input.apiKey || input.name || input.shareRoles)) {
+      return view((await getRow(id))!);
+    }
+    const refreshed = await refresh(id);
+    if (input.name && input.name !== row.name) {
+      await ctx.asUser(row.ownerId, () =>
+        ctx.hosts.folders.removeEmpty(row.name).catch(() => false),
+      );
+    }
+    return refreshed;
   }
 
   async function reshare(id: number, roles: number[]): Promise<void> {
@@ -474,6 +542,7 @@ export function createSites(
         for (const entry of mapped) {
           await ctx.hosts.delete(entry.hostId).catch(() => false);
         }
+        await ctx.hosts.folders.removeEmpty(row.name).catch(() => false);
       });
     }
     await client.delete(stores.hosts).where(eq(stores.hosts.siteId, id));
@@ -501,25 +570,21 @@ export function createSites(
     }
   }
 
-  /**
-   * What the remote needs to start a session on a host: the host as its own
-   * API describes it. Secrets stay on the remote and are found there by id.
-   */
-  async function hostConfig(id: number, remoteId: number) {
-    const row = await getRow(id);
-    if (!row) throw new SiteError("No such site", 404);
-    const remote = await call<RemoteHost>(row, `/host/db/host/${remoteId}`);
-    return {
-      id: remote.id,
-      ip: remote.ip,
-      port: remote.port ?? 22,
-      username: remote.username,
-      authType: remote.authType,
-      credentialId: remote.credentialId ?? undefined,
-    };
+  /** The site and remote id a mirrored host stands for. */
+  async function mappingOf(
+    hostId: number,
+  ): Promise<{ siteId: number; remoteId: number } | null> {
+    const [entry] = await (
+      await db()
+    )
+      .select()
+      .from(stores.hosts)
+      .where(eq(stores.hosts.hostId, hostId))
+      .limit(1);
+    return entry ? { siteId: entry.siteId, remoteId: entry.remoteId } : null;
   }
 
-  /** A one minute ticket for opening the remote's terminal socket as the key's user. */
+  /** A one minute ticket for opening the remote's relay socket as the key's user. */
   async function socketTicket(
     id: number,
   ): Promise<{ baseUrl: string; ticket: string }> {
@@ -541,7 +606,7 @@ export function createSites(
     refresh,
     refreshAll,
     overview,
-    hostConfig,
+    mappingOf,
     socketTicket,
     loadMirrored,
     /** For the host lock: the site a host is mirrored from, if any. */

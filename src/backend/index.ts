@@ -9,7 +9,7 @@ import { createAccountsRouter } from "./accounts-routes.js";
 import { EngineManager } from "./engines.js";
 import { createSites } from "./sites.js";
 import { createSitesRouter } from "./sites-routes.js";
-import { registerSiteTerminal } from "./site-terminal.js";
+import { registerSiteTransport } from "./site-transport.js";
 
 const SITE_REFRESH_MS = 60_000;
 
@@ -51,7 +51,7 @@ export async function activate(ctx: PluginContext) {
   const api = ctx.http.router<express.Router>();
   api.use(createAccountsRouter({ ctx, host, manager, webTable, log }));
   api.use(createSitesRouter(ctx, host, siteStore, log));
-  registerSiteTerminal(ctx, siteStore, log);
+  registerSiteTransport(ctx, siteStore);
 
   // Hosts mirrored from a site stay read only here; the site is the source.
   ctx.hosts.locks.provide({

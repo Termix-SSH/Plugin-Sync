@@ -54,12 +54,12 @@ function api(sites: unknown[]) {
 }
 
 describe(`${manifest.id} activate`, () => {
-  it("adds the account switcher, the sites setting and the session tab", async () => {
+  it("adds the account switcher, and the sites setting", async () => {
     rendered = await renderWithApp(plugin, { manifest, locales });
     expect(rendered.registered.slot("shell.accountSwitcher")).toEqual([
       "sync.accountSwitcher",
     ]);
-    expect(rendered.registered.tabs()).toEqual(["site_terminal"]);
+    expect(rendered.registered.tabs()).toEqual([]);
     expect(rendered.registered.railItems().map((item) => item.id)).toEqual([
       "sync",
     ]);

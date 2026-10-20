@@ -30,6 +30,7 @@
     "hosts:read",
     "hosts:write",
     "hosts:lock",
+    "ssh:transport",
     "users:impersonate",
     "network:outbound",
     "network:serve",
@@ -80,14 +81,6 @@
         }
       ]
     },
-    "tabs": [
-      {
-        "id": "site_terminal",
-        "titleKey": "sites.terminal.title",
-        "icon": "Globe",
-        "openFrom": ["host-context-menu"]
-      }
-    ],
     "panels": [
       {
         "id": "sync",
