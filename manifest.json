@@ -9,6 +9,7 @@
   "license": "Apache-2.0",
   "repository": "https://github.com/Termix-SSH/Plugin-Sync",
   "docs": "https://docs.termix.site/plugins/sync",
+  "video": "https://www.youtube.com/watch?v=mBiGtdZxdK0",
   "category": "Infrastructure",
   "icon": "RefreshCw",
   "features": [
