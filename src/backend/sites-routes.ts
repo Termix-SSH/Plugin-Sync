@@ -26,6 +26,11 @@ const idOf = (req: Request) => {
   return Number.isSafeInteger(id) ? id : -1;
 };
 
+const roleIds = (value: unknown): number[] | undefined =>
+  Array.isArray(value)
+    ? value.filter((id): id is number => Number.isSafeInteger(id))
+    : undefined;
+
 const text = (value: unknown, max: number) =>
   typeof value === "string" ? value.trim().slice(0, max) : "";
 
@@ -41,6 +46,7 @@ export function createSitesRouter(
     "/overview",
     ctx.rbac.require("sites") as unknown as RequestHandler,
   );
+  router.use("/roles", ctx.rbac.require("sites") as unknown as RequestHandler);
 
   /**
    * @openapi
@@ -88,7 +94,7 @@ export function createSitesRouter(
    * /plugin-api/sync/sites:
    *   post:
    *     summary: Add a remote site
-   *     description: Saves the site with an API key made on it, then reads its hosts. The key's user on the remote decides what can be seen and opened.
+   *     description: Saves the site with an API key made on it, then mirrors its SSH hosts as read only hosts owned by the user who adds it, in a folder named after the site. The key's user on the remote decides which hosts exist here. shareRoles lists the roles the hosts are shared with.
    *     tags:
    *       - Sync
    *     requestBody:
@@ -103,6 +109,10 @@ export function createSitesRouter(
    *                 type: string
    *               apiKey:
    *                 type: string
+   *               shareRoles:
+   *                 type: array
+   *                 items:
+   *                   type: integer
    *     responses:
    *       200:
    *         description: The site, with the result of the first refresh.
@@ -121,7 +131,15 @@ export function createSitesRouter(
         .json({ error: "Name, address and API key are required" });
     }
     try {
-      res.json({ site: await sites.create({ name, baseUrl, apiKey }) });
+      res.json({
+        site: await sites.create({
+          name,
+          baseUrl,
+          apiKey,
+          ownerId: (req as Request & { userId: string }).userId,
+          shareRoles: roleIds(req.body?.shareRoles) ?? [],
+        }),
+      });
     } catch (error) {
       fail(res, error, "Failed to add the site");
     }
@@ -131,8 +149,8 @@ export function createSitesRouter(
    * @openapi
    * /plugin-api/sync/sites/{id}:
    *   put:
-   *     summary: Rename a site or replace its API key
-   *     description: A new API key is tried straight away.
+   *     summary: Rename a site, replace its API key or change who sees its hosts
+   *     description: A new API key is tried straight away. A new name moves the hosts to a folder with that name.
    *     tags:
    *       - Sync
    *     parameters:
@@ -153,6 +171,7 @@ export function createSitesRouter(
         site: await sites.update(idOf(req), {
           name: text(req.body?.name, 100) || undefined,
           apiKey: text(req.body?.apiKey, 500) || undefined,
+          shareRoles: roleIds(req.body?.shareRoles),
         }),
       });
     } catch (error) {
@@ -217,27 +236,21 @@ export function createSitesRouter(
 
   /**
    * @openapi
-   * /plugin-api/sync/sites/{id}/hosts:
+   * /plugin-api/sync/roles:
    *   get:
-   *     summary: A site's hosts
-   *     description: Read only. The hosts the API key's user can see on the remote, as of the last refresh.
+   *     summary: Roles the mirrored hosts can be shared with
+   *     description: For the picker when adding or editing a site.
    *     tags:
    *       - Sync
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: integer
    *     responses:
    *       200:
-   *         description: The hosts.
+   *         description: The roles.
    */
-  router.get("/sites/:id/hosts", async (req: Request, res: Response) => {
+  router.get("/roles", async (_req: Request, res: Response) => {
     try {
-      res.json({ hosts: await sites.hostsOf(idOf(req)) });
+      res.json({ roles: await ctx.hosts.listRoles() });
     } catch (error) {
-      fail(res, error, "Failed to list hosts");
+      fail(res, error, "Failed to list roles");
     }
   });
 

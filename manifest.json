@@ -15,8 +15,8 @@
     "Link the desktop app to a server and keep hosts, credentials and settings in sync, with an offline copy",
     "Link several servers and accounts and switch between them, each with its own copy",
     "Add other Termix servers as remote sites with an API key",
-    "See the hosts and health of every remote site in one place",
-    "Open sessions on remote site hosts, with the remote server doing the connecting",
+    "The hosts of other Termix servers appear as real hosts in your own list, read only and kept up to date",
+    "Open a session on one of them like on any host, with the remote server doing the connecting",
     "A documented sync protocol that other clients can use"
   ],
   "env": [],
@@ -27,6 +27,10 @@
   "capabilities": [
     "sync:provide",
     "db:own",
+    "hosts:read",
+    "hosts:write",
+    "hosts:lock",
+    "users:impersonate",
     "network:outbound",
     "network:serve",
     "kv:own",
@@ -42,13 +46,41 @@
         "defaultRoles": ["admin"]
       }
     ],
-    "tabs": [
-      {
-        "id": "sites",
-        "titleKey": "sites.title",
-        "icon": "Globe",
-        "openFrom": ["rail"]
+    "settings": {
+      "host": {
+        "fields": [
+          {
+            "key": "siteId",
+            "type": "number",
+            "labelKey": "settings.host.site",
+            "hidden": true,
+            "defaultable": false
+          },
+          {
+            "key": "remoteId",
+            "type": "number",
+            "labelKey": "settings.host.site",
+            "hidden": true,
+            "defaultable": false
+          },
+          {
+            "key": "remoteStatus",
+            "type": "string",
+            "labelKey": "settings.host.site",
+            "hidden": true,
+            "defaultable": false
+          }
+        ]
       },
+      "admin": [
+        {
+          "key": "sites",
+          "type": "custom",
+          "component": "sites"
+        }
+      ]
+    },
+    "tabs": [
       {
         "id": "site_terminal",
         "titleKey": "sites.terminal.title",

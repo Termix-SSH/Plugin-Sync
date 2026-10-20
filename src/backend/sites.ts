@@ -1,13 +1,17 @@
 /**
  * Remote sites: other Termix servers a master manages. The master holds an
- * API key made on each remote, reads its hosts and status with it, and opens
- * sessions through it. What the key's user can see on the remote is all the
- * master can see, and the remote does the connecting.
+ * API key made on each remote and keeps that remote's SSH hosts as real hosts
+ * of its own, in a folder named after the site. They are locked, so the site
+ * stays the source of truth, and a session on one is opened through the
+ * remote: the remote does the connecting and the master only passes frames.
+ * What the key's user can see on the remote is all the master can mirror.
  */
 
+import crypto from "node:crypto";
 import { eq } from "drizzle-orm";
 import type {
   PluginContext,
+  PluginHostCreateInput,
   PluginSyncHost,
 } from "@termix-ssh/plugin-sdk/backend";
 
@@ -15,22 +19,12 @@ export interface SiteRecord {
   id: number;
   name: string;
   baseUrl: string;
+  ownerId: string;
+  shareRoles: number[];
   status: "pending" | "ok" | "error";
   lastError: string | null;
   lastSeenAt: string | null;
   hostCount: number | null;
-}
-
-export interface SiteHostRecord {
-  id: number;
-  siteId: number;
-  remoteId: number;
-  name: string;
-  address: string | null;
-  protocol: string | null;
-  folder: string | null;
-  tags: string[];
-  status: string | null;
 }
 
 export interface Overview {
@@ -42,7 +36,7 @@ export interface Overview {
   offline: number;
 }
 
-/** What the remote's own API says about a host, trimmed to what the master shows. */
+/** What the remote's own API says about a host, trimmed to what is mirrored. */
 interface RemoteHost {
   id: number;
   name?: string | null;
@@ -50,6 +44,7 @@ interface RemoteHost {
   port?: number | null;
   username?: string | null;
   connectionType?: string | null;
+  enableSsh?: boolean | null;
   folder?: string | null;
   tags?: string[] | string | null;
   authType?: string | null;
@@ -92,8 +87,24 @@ function parseTags(tags: RemoteHost["tags"]): string[] {
 function statusOf(entry: unknown): string | null {
   if (!entry || typeof entry !== "object") return null;
   const value = (entry as { status?: unknown }).status;
-  if (typeof value === "string") return value;
-  return null;
+  return typeof value === "string" ? value : null;
+}
+
+function parseRoles(value: unknown): number[] {
+  try {
+    const parsed = JSON.parse(String(value ?? "[]"));
+    return Array.isArray(parsed)
+      ? parsed.filter((id): id is number => Number.isSafeInteger(id))
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Only SSH hosts can be opened through the remote's terminal. */
+function mirrorable(host: RemoteHost): boolean {
+  const type = host.connectionType || "ssh";
+  return type === "ssh" && host.enableSsh !== false && !!host.ip;
 }
 
 export function createSites(
@@ -103,16 +114,30 @@ export function createSites(
   log: { warn: (message: string, meta?: unknown) => void },
 ) {
   const db = () => ctx.db.client<any>();
+  /** Host id to the name of the site it mirrors, for the lock note. */
+  const mirrored = new Map<number, string>();
 
-  const toRecord = (row: any): SiteRecord => ({
+  const toRecord = (row: any, hostCount: number | null): SiteRecord => ({
     id: row.id,
     name: row.name,
     baseUrl: row.baseUrl,
+    ownerId: row.ownerId,
+    shareRoles: parseRoles(row.shareRoles),
     status: (row.status as SiteRecord["status"]) ?? "pending",
     lastError: row.lastError ?? null,
     lastSeenAt: row.lastSeenAt ?? null,
-    hostCount: row.hostCount ?? null,
+    hostCount,
   });
+
+  async function countOf(siteId: number): Promise<number> {
+    const rows = await (
+      await db()
+    )
+      .select()
+      .from(stores.hosts)
+      .where(eq(stores.hosts.siteId, siteId));
+    return rows.length;
+  }
 
   async function keyOf(row: { apiKey: string }): Promise<string> {
     const key = await ctx.secrets.unseal(row.apiKey);
@@ -147,13 +172,6 @@ export function createSites(
     return error instanceof Error ? error.message : String(error);
   }
 
-  async function list(): Promise<SiteRecord[]> {
-    const rows = await (await db()).select().from(stores.sites);
-    return rows
-      .map(toRecord)
-      .sort((a: SiteRecord, b: SiteRecord) => a.name.localeCompare(b.name));
-  }
-
   async function getRow(id: number) {
     const [row] = await (
       await db()
@@ -165,7 +183,160 @@ export function createSites(
     return row ?? null;
   }
 
-  /** Reads the remote's hosts and status and keeps the answer. */
+  async function view(row: any): Promise<SiteRecord> {
+    return toRecord(row, await countOf(row.id));
+  }
+
+  async function list(): Promise<SiteRecord[]> {
+    const rows = await (await db()).select().from(stores.sites);
+    const out = await Promise.all(rows.map((row: any) => view(row)));
+    return out.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  const grantsFor = (roles: number[]) =>
+    roles.map((id) => ({
+      target: { type: "role" as const, id },
+      permissionLevel: "connect" as const,
+    }));
+
+  /** Rebuilds the lock lookup from what is mirrored now. */
+  async function loadMirrored(): Promise<void> {
+    const client = await db();
+    const siteRows = await client.select().from(stores.sites);
+    const names = new Map<number, string>(
+      siteRows.map((row: any) => [row.id, row.name]),
+    );
+    const rows = await client.select().from(stores.hosts);
+    mirrored.clear();
+    for (const row of rows) {
+      mirrored.set(row.hostId, names.get(row.siteId) ?? "a remote site");
+    }
+  }
+
+  function desired(
+    site: { id: number; name: string },
+    remote: RemoteHost,
+    status: string | null,
+  ): PluginHostCreateInput {
+    const folder = remote.folder
+      ? `${site.name} / ${remote.folder}`
+      : site.name;
+    return {
+      name: String(remote.name || remote.ip).slice(0, 255),
+      ip: String(remote.ip),
+      port: remote.port ?? 22,
+      username: String(remote.username ?? ""),
+      authType: "none",
+      connectionType: "ssh",
+      // The master never connects itself, so tools that need a direct SSH
+      // connection stay off and the remote's own checks are not repeated here.
+      enableSsh: false,
+      statusCheckEnabled: false,
+      folder,
+      tags: parseTags(remote.tags),
+      pluginSettings: {
+        [ctx.pluginId]: {
+          siteId: site.id,
+          remoteId: remote.id,
+          remoteStatus: status ?? "unknown",
+        },
+      },
+    };
+  }
+
+  const signatureOf = (input: PluginHostCreateInput, roles: number[]) =>
+    crypto
+      .createHash("sha256")
+      .update(JSON.stringify([input, roles]))
+      .digest("hex")
+      .slice(0, 40);
+
+  /** Brings the mirrored hosts in line with what the remote lists. */
+  async function mirror(
+    row: any,
+    remoteHosts: RemoteHost[],
+    statuses: Record<string, unknown>,
+  ): Promise<number> {
+    const client = await db();
+    const roles = parseRoles(row.shareRoles);
+    const mapped = await client
+      .select()
+      .from(stores.hosts)
+      .where(eq(stores.hosts.siteId, row.id));
+    const byRemote = new Map<number, any>(
+      mapped.map((entry: any) => [entry.remoteId, entry]),
+    );
+    const seen = new Set<number>();
+    let failed = 0;
+
+    await ctx.asUser(row.ownerId, async () => {
+      for (const remote of remoteHosts.filter(mirrorable).slice(0, 5000)) {
+        seen.add(remote.id);
+        const status = statusOf(statuses[String(remote.id)]);
+        const input = desired(row, remote, status);
+        const signature = signatureOf(input, roles);
+        const existing = byRemote.get(remote.id);
+        try {
+          if (existing && existing.signature === signature) continue;
+          if (existing) {
+            // Pins and order stay with each user, so they are never written.
+            const updated = await ctx.hosts.update(existing.hostId, input);
+            if (updated) {
+              await client
+                .update(stores.hosts)
+                .set({ signature, status })
+                .where(eq(stores.hosts.id, existing.id));
+              continue;
+            }
+            // Deleted outside the plugin, so it comes back as a new host.
+            await client
+              .delete(stores.hosts)
+              .where(eq(stores.hosts.id, existing.id));
+          }
+          const created = await ctx.hosts.create(input);
+          if (roles.length > 0) {
+            await ctx.hosts.setShares(created.id, grantsFor(roles));
+          }
+          await client.insert(stores.hosts).values({
+            siteId: row.id,
+            remoteId: remote.id,
+            hostId: created.id,
+            signature,
+            status,
+          });
+        } catch (error) {
+          failed++;
+          log.warn("Could not mirror a host", {
+            site: row.name,
+            host: remote.name,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
+
+      for (const entry of mapped) {
+        if (seen.has(entry.remoteId)) continue;
+        try {
+          await ctx.hosts.delete(entry.hostId);
+          await client
+            .delete(stores.hosts)
+            .where(eq(stores.hosts.id, entry.id));
+        } catch (error) {
+          failed++;
+          log.warn("Could not remove a mirrored host", {
+            site: row.name,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
+    });
+    if (failed > 0) {
+      throw new SiteError(`${failed} hosts could not be written here`, 500);
+    }
+    return seen.size;
+  }
+
+  /** Reads the remote's hosts and status and mirrors them. */
   async function refresh(id: number): Promise<SiteRecord> {
     const row = await getRow(id);
     if (!row) throw new SiteError("No such site", 404);
@@ -179,34 +350,15 @@ export function createSites(
       try {
         statuses = await call<Record<string, unknown>>(row, "/host/status");
       } catch {
-        // Hosts are still worth listing without their status.
+        // Hosts are still worth mirroring without their status.
       }
-      await client.delete(stores.hosts).where(eq(stores.hosts.siteId, id));
-      const hosts = remote.slice(0, 5000).map((entry) => ({
-        siteId: id,
-        remoteId: entry.id,
-        name: String(entry.name || entry.ip || `Host ${entry.id}`).slice(
-          0,
-          255,
-        ),
-        address: entry.ip ? String(entry.ip).slice(0, 255) : null,
-        protocol: entry.connectionType
-          ? String(entry.connectionType).slice(0, 40)
-          : null,
-        folder: entry.folder ? String(entry.folder).slice(0, 255) : null,
-        tags: JSON.stringify(parseTags(entry.tags)),
-        status: statusOf(statuses[String(entry.id)]),
-      }));
-      for (let i = 0; i < hosts.length; i += 200) {
-        await client.insert(stores.hosts).values(hosts.slice(i, i + 200));
-      }
+      await mirror(row, remote, statuses);
       await client
         .update(stores.sites)
         .set({
           status: "ok",
           lastError: null,
           lastSeenAt: new Date().toISOString(),
-          hostCount: hosts.length,
         })
         .where(eq(stores.sites.id, id));
     } catch (error) {
@@ -218,13 +370,16 @@ export function createSites(
         .where(eq(stores.sites.id, id));
     }
     await ctx.db.persist();
-    return toRecord((await getRow(id))!);
+    await loadMirrored();
+    return view((await getRow(id))!);
   }
 
   async function create(input: {
     name: string;
     baseUrl: string;
     apiKey: string;
+    ownerId: string;
+    shareRoles: number[];
   }): Promise<SiteRecord> {
     const client = await db();
     const [existing] = await client
@@ -237,6 +392,8 @@ export function createSites(
       name: input.name,
       baseUrl: input.baseUrl,
       apiKey: await ctx.secrets.seal(input.apiKey),
+      ownerId: input.ownerId,
+      shareRoles: JSON.stringify(input.shareRoles),
       status: "pending",
     });
     const [row] = await client
@@ -250,13 +407,14 @@ export function createSites(
 
   async function update(
     id: number,
-    input: { name?: string; apiKey?: string },
+    input: { name?: string; apiKey?: string; shareRoles?: number[] },
   ): Promise<SiteRecord> {
     const row = await getRow(id);
     if (!row) throw new SiteError("No such site", 404);
     const set: Record<string, unknown> = {};
     if (input.name) set.name = input.name;
     if (input.apiKey) set.apiKey = await ctx.secrets.seal(input.apiKey);
+    if (input.shareRoles) set.shareRoles = JSON.stringify(input.shareRoles);
     if (Object.keys(set).length > 0) {
       await (
         await db()
@@ -266,58 +424,74 @@ export function createSites(
         .where(eq(stores.sites.id, id));
       await ctx.db.persist();
     }
-    return input.apiKey ? refresh(id) : toRecord((await getRow(id))!);
+    // A new name moves the folder and new roles change who can see the hosts,
+    // so both rewrite every host on the next pass.
+    if (input.name || input.shareRoles) {
+      await (
+        await db()
+      )
+        .update(stores.hosts)
+        .set({ signature: null })
+        .where(eq(stores.hosts.siteId, id));
+      if (input.shareRoles) await reshare(id, input.shareRoles);
+    }
+    return input.apiKey || input.name || input.shareRoles
+      ? refresh(id)
+      : view((await getRow(id))!);
   }
 
-  async function remove(id: number): Promise<void> {
-    const client = await db();
-    await client.delete(stores.hosts).where(eq(stores.hosts.siteId, id));
-    await client.delete(stores.sites).where(eq(stores.sites.id, id));
-    await ctx.db.persist();
-  }
-
-  async function hostsOf(id: number): Promise<SiteHostRecord[]> {
-    const rows = await (
+  async function reshare(id: number, roles: number[]): Promise<void> {
+    const row = await getRow(id);
+    if (!row) return;
+    const mapped = await (
       await db()
     )
       .select()
       .from(stores.hosts)
       .where(eq(stores.hosts.siteId, id));
-    return rows
-      .map((row: any) => ({
-        id: row.id,
-        siteId: row.siteId,
-        remoteId: row.remoteId,
-        name: row.name,
-        address: row.address ?? null,
-        protocol: row.protocol ?? null,
-        folder: row.folder ?? null,
-        tags: (() => {
-          try {
-            return JSON.parse(row.tags ?? "[]") as string[];
-          } catch {
-            return [];
-          }
-        })(),
-        status: row.status ?? null,
-      }))
-      .sort((a: SiteHostRecord, b: SiteHostRecord) =>
-        a.name.localeCompare(b.name),
-      );
+    await ctx.asUser(row.ownerId, async () => {
+      for (const entry of mapped) {
+        await ctx.hosts
+          .setShares(entry.hostId, grantsFor(roles))
+          .catch((error: unknown) =>
+            log.warn("Could not share a mirrored host", {
+              error: error instanceof Error ? error.message : String(error),
+            }),
+          );
+      }
+    });
+  }
+
+  async function remove(id: number): Promise<void> {
+    const row = await getRow(id);
+    const client = await db();
+    if (row) {
+      const mapped = await client
+        .select()
+        .from(stores.hosts)
+        .where(eq(stores.hosts.siteId, id));
+      await ctx.asUser(row.ownerId, async () => {
+        for (const entry of mapped) {
+          await ctx.hosts.delete(entry.hostId).catch(() => false);
+        }
+      });
+    }
+    await client.delete(stores.hosts).where(eq(stores.hosts.siteId, id));
+    await client.delete(stores.sites).where(eq(stores.sites.id, id));
+    await ctx.db.persist();
+    await loadMirrored();
   }
 
   async function overview(): Promise<Overview> {
     const sites = await list();
     const rows = await (await db()).select().from(stores.hosts);
-    const online = rows.filter((row: any) => row.status === "online").length;
-    const offline = rows.filter((row: any) => row.status === "offline").length;
     return {
       sites: sites.length,
       reachable: sites.filter((site) => site.status === "ok").length,
       unreachable: sites.filter((site) => site.status === "error").length,
       hosts: rows.length,
-      online,
-      offline,
+      online: rows.filter((row: any) => row.status === "online").length,
+      offline: rows.filter((row: any) => row.status === "offline").length,
     };
   }
 
@@ -366,13 +540,15 @@ export function createSites(
     remove,
     refresh,
     refreshAll,
-    hostsOf,
     overview,
     hostConfig,
     socketTicket,
+    loadMirrored,
+    /** For the host lock: the site a host is mirrored from, if any. */
+    siteNameOf: (hostId: number) => mirrored.get(hostId) ?? null,
     get: async (id: number) => {
       const row = await getRow(id);
-      return row ? toRecord(row) : null;
+      return row ? view(row) : null;
     },
   };
 }

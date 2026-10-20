@@ -1,25 +1,34 @@
-A Termix server can manage other Termix servers as remote sites, for example one at home and one at work. The master lists each site's hosts and status, rolls up their health and opens sessions on their hosts. The remote server does the connecting. The master only passes the terminal along.
+A Termix server can manage other Termix servers as remote sites, for example one at home and one at work. The SSH hosts of each site become real hosts in your own host list, in a folder named after the site. You open a session on them like on any other host. The remote server does the connecting. The master only passes the terminal along.
 
 ## Set it up
 
 1. On the remote server, go to your API key settings and make a key. Use a user that can see the hosts you want to manage.
-2. On the master, open Sites in the rail and choose Add site.
-3. Enter a name, the address of the remote server and the key.
+2. On the master, open the Sync plugin's settings, find Remote sites and choose Add site.
+3. Enter a name, the address of the remote server and the key. Pick the roles that should see the hosts, or leave it empty so only you do.
 
-The master reads the hosts and status right away, then again every minute.
+The hosts show up in the host list right away and are checked again every minute.
 
-## What you can do
+## How the hosts work
 
-- See every site, whether it answers, and how many of its hosts are online.
-- Open a site to list its hosts. Hosts are read only here. Change them on the remote.
-- Open a session on a host. The remote makes the SSH connection with the credentials it holds, so no secrets reach the master.
-- If a host asks for a password, passphrase or code, the terminal asks you for it.
+- Each site is a folder. Folders on the remote are kept inside it.
+- They are read only here. Change a host on the site and the change arrives within a minute. A host removed there is removed here.
+- A mirrored host shows the status the site reports, not a check from the master.
+- Pins and order stay yours, like with any managed host.
+- Only SSH hosts are mirrored. Remote desktop and other protocol hosts stay on their site.
+- Renaming a site moves its folder. Changing the roles changes who can see the hosts.
+- Removing a site removes its hosts here. The API key stays valid on the remote until you delete it there.
+
+## Sessions
+
+Opening a mirrored host starts the session through the remote site. The remote makes the SSH connection with the credentials it holds, so no secrets reach the master, and the master never needs a route to the host. If a host asks for a password, passphrase or code, the terminal asks you for it.
+
+Other tools that connect to a host directly, like files or tunnels, are off for mirrored hosts, since the master can't reach them. Use them on the site.
 
 ## Permissions
 
-What you can see and open comes from the API key's user on the remote. A host that user can't connect to doesn't show up. Only users with the sites permission can use Sites on the master.
+What gets mirrored and opened comes from the API key's user on the remote. A host that user can't connect to doesn't show up. Only users with the sites permission can add and change sites. The hosts belong to the user who added the site.
 
-The API key is saved encrypted on the master and is only ever sent to its own remote. Deleting the key on the remote cuts the master off.
+The API key is saved encrypted on the master and is only ever sent to its own remote.
 
 ## Connecting sites that can't reach each other
 

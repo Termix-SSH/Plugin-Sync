@@ -114,10 +114,32 @@ let side: Side;
 beforeEach(async () => {
   remote = await startRemote();
   db = await createTestDb(path.resolve(import.meta.dirname, "../.."));
+  db.sqlite.exec("INSERT INTO users (id, username) VALUES ('admin', 'admin')");
   mock = createMockCtx({
     pluginId: "sync",
-    capabilities: ["secrets:own", "db:own", "network:serve"],
+    actor: "admin",
+    capabilities: [
+      "secrets:own",
+      "db:own",
+      "network:serve",
+      "hosts:read",
+      "hosts:write",
+      "users:impersonate",
+    ],
     db: db.database,
+    shareableRoles: [{ id: 5, name: "ops", displayName: "Ops" }],
+  });
+  // The real host rows live in core's table, which the foreign key points at.
+  const realCreate = mock.ctx.hosts.create.bind(mock.ctx.hosts);
+  const realDelete = mock.ctx.hosts.delete.bind(mock.ctx.hosts);
+  vi.spyOn(mock.ctx.hosts, "create").mockImplementation(async (input) => {
+    const record = await realCreate(input);
+    db.sqlite.prepare("INSERT INTO ssh_data (id) VALUES (?)").run(record.id);
+    return record;
+  });
+  vi.spyOn(mock.ctx.hosts, "delete").mockImplementation(async (hostId) => {
+    db.sqlite.prepare("DELETE FROM ssh_data WHERE id = ?").run(hostId);
+    return realDelete(hostId);
   });
   side = new Side({ embedded: false });
   const host = createHost(side);
@@ -132,6 +154,10 @@ beforeEach(async () => {
   );
   const express_ = express();
   express_.use(express.json());
+  express_.use((req, _res, next) => {
+    (req as unknown as { userId: string }).userId = "admin";
+    next();
+  });
   express_.use(createSitesRouter(mock.ctx, host, store, log));
   app = await new Promise<Server>((resolve) => {
     const server = express_.listen(0, "127.0.0.1", () => resolve(server));
@@ -145,48 +171,158 @@ afterEach(async () => {
   await db.close();
 });
 
-async function add(name = "Berlin") {
+async function add(name = "Berlin", shareRoles: number[] = []) {
   const response = await fetch(`${appUrl}/sites`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, baseUrl: remote.url, apiKey: KEY }),
+    body: JSON.stringify({
+      name,
+      baseUrl: remote.url,
+      apiKey: KEY,
+      shareRoles,
+    }),
   });
   return { status: response.status, body: await response.json() };
 }
 
+const mirrored = () => mock.ctx.hosts.listOwned();
+
 describe("remote sites", () => {
-  it("adds a site, reads its hosts and keeps the key sealed", async () => {
+  it("adds a site and keeps the key sealed", async () => {
     const { status, body } = await add();
     expect(status).toBe(200);
     expect(body.site).toMatchObject({
       name: "Berlin",
       status: "ok",
       hostCount: 2,
+      ownerId: "admin",
     });
     expect(body.site.apiKey).toBeUndefined();
     expect(remote.authHeaders[0]).toBe(`Bearer ${KEY}`);
     const stored = db.sqlite
       .prepare("SELECT api_key FROM p_sync_sites")
-      .get() as {
-      api_key: string;
-    };
+      .get() as { api_key: string };
     expect(stored.api_key).not.toContain(KEY);
   });
 
-  it("lists a site's hosts read only, with tags and status", async () => {
+  it("mirrors the site's SSH hosts as real hosts in a folder named after it", async () => {
+    await add();
+    const hosts = await mirrored();
+    expect(hosts.map((h) => h.name).sort()).toEqual(["db1", "web1"]);
+    const db1 = hosts.find((h) => h.name === "db1")!;
+    expect(db1).toMatchObject({
+      ip: "10.0.0.7",
+      port: 22,
+      username: "root",
+      folder: "Berlin / Prod",
+      connectionType: "ssh",
+      enableSsh: false,
+      statusCheckEnabled: false,
+    });
+    expect(hosts.find((h) => h.name === "web1")?.folder).toBe("Berlin");
+  });
+
+  it("keeps where a host came from in its own settings", async () => {
+    await add();
+    const created = vi
+      .mocked(mock.ctx.hosts.create)
+      .mock.calls.map(([input]) => input)
+      .find((input) => input.name === "db1")!;
+    expect(created.pluginSettings?.sync).toMatchObject({
+      siteId: 1,
+      remoteId: 7,
+      remoteStatus: "online",
+    });
+  });
+
+  it("locks a mirrored host and names the site it comes from", async () => {
+    await add();
+    const db1 = (await mirrored()).find((h) => h.name === "db1")!;
+    expect(store.siteNameOf(db1.id)).toBe("Berlin");
+    expect(store.siteNameOf(9999)).toBeNull();
+  });
+
+  it("leaves out hosts the remote's terminal can't open", async () => {
+    remote.hosts.push({
+      id: 9,
+      name: "desk",
+      ip: "10.0.0.9",
+      port: 3389,
+      connectionType: "rdp",
+    });
+    await add();
+    expect((await mirrored()).map((h) => h.name)).not.toContain("desk");
+  });
+
+  it("does not write a host again when nothing changed", async () => {
     const { body } = await add();
-    const hosts = await (
-      await fetch(`${appUrl}/sites/${body.site.id}/hosts`)
-    ).json();
-    expect(hosts.hosts).toEqual([
-      expect.objectContaining({
-        remoteId: 7,
-        name: "db1",
-        folder: "Prod",
-        tags: ["prod", "db"],
-        status: "online",
-      }),
-      expect.objectContaining({ remoteId: 8, name: "web1", status: "offline" }),
+    const updates = vi.spyOn(mock.ctx.hosts, "update");
+    await store.refresh(body.site.id);
+    expect(updates).not.toHaveBeenCalled();
+  });
+
+  it("updates a host when the remote changes it", async () => {
+    const { body } = await add();
+    vi.spyOn(mock.ctx.hosts, "update");
+    remote.hosts[0].port = 2222;
+    remote.statuses["7"] = { status: "offline" };
+    await store.refresh(body.site.id);
+    const db1 = (await mirrored()).find((h) => h.name === "db1")!;
+    expect(db1.port).toBe(2222);
+    const patch = vi.mocked(mock.ctx.hosts.update).mock.calls[0][1];
+    expect(patch.pluginSettings?.sync).toMatchObject({
+      remoteStatus: "offline",
+    });
+  });
+
+  it("adds new remote hosts and removes ones that are gone", async () => {
+    const { body } = await add();
+    remote.hosts.splice(1, 1);
+    remote.hosts.push({ id: 10, name: "cache1", ip: "10.0.0.10", port: 22 });
+    await store.refresh(body.site.id);
+    expect((await mirrored()).map((h) => h.name).sort()).toEqual([
+      "cache1",
+      "db1",
+    ]);
+  });
+
+  it("brings back a host that was deleted outside the plugin", async () => {
+    const { body } = await add();
+    const db1 = (await mirrored()).find((h) => h.name === "db1")!;
+    await mock.ctx.hosts.delete(db1.id);
+    db.sqlite.prepare("UPDATE p_sync_site_hosts SET signature = NULL").run();
+    await store.refresh(body.site.id);
+    expect((await mirrored()).map((h) => h.name).sort()).toEqual([
+      "db1",
+      "web1",
+    ]);
+  });
+
+  it("shares the hosts with the chosen roles", async () => {
+    await add("Berlin", [5]);
+    expect(mock.hostShareSets).toHaveLength(2);
+    expect(mock.hostShareSets[0].grants).toEqual([
+      { target: { type: "role", id: 5 }, permissionLevel: "connect" },
+    ]);
+  });
+
+  it("moves the hosts when the site is renamed", async () => {
+    const { body } = await add();
+    await fetch(`${appUrl}/sites/${body.site.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "Frankfurt" }),
+    });
+    expect((await mirrored()).map((h) => h.folder).sort()).toEqual([
+      "Frankfurt",
+      "Frankfurt / Prod",
+    ]);
+  });
+
+  it("lists the roles the hosts can be shared with", async () => {
+    const roles = await (await fetch(`${appUrl}/roles`)).json();
+    expect(roles.roles).toEqual([
+      expect.objectContaining({ id: 5, name: "ops" }),
     ]);
   });
 
@@ -209,6 +345,13 @@ describe("remote sites", () => {
     const { body } = await add();
     expect(body.site.status).toBe("error");
     expect(body.site.lastError).toBe("The API key was refused");
+  });
+
+  it("keeps the mirrored hosts when the site can't be reached", async () => {
+    const { body } = await add();
+    remote.rejectKey = true;
+    await store.refresh(body.site.id);
+    expect(await mirrored()).toHaveLength(2);
   });
 
   it("rolls up health across sites", async () => {
@@ -240,10 +383,11 @@ describe("remote sites", () => {
     expect(remote.authHeaders.at(-1)).toBe("Bearer tmx_new_key_654321");
   });
 
-  it("removes a site and its hosts", async () => {
+  it("removes a site and the hosts it mirrored", async () => {
     const { body } = await add();
     await fetch(`${appUrl}/sites/${body.site.id}`, { method: "DELETE" });
     expect((await (await fetch(`${appUrl}/sites`)).json()).sites).toEqual([]);
+    expect(await mirrored()).toEqual([]);
     expect(db.sqlite.prepare("SELECT * FROM p_sync_site_hosts").all()).toEqual(
       [],
     );

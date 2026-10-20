@@ -115,6 +115,14 @@
           "type": "text",
           "notNull": true
         },
+        "ownerId": {
+          "type": "refUser",
+          "length": 255,
+          "notNull": true
+        },
+        "shareRoles": {
+          "type": "text"
+        },
         "options": {
           "type": "text"
         },
@@ -163,25 +171,13 @@
           "type": "integer",
           "notNull": true
         },
-        "name": {
-          "type": "varchar",
-          "length": 255,
+        "hostId": {
+          "type": "refHost",
           "notNull": true
         },
-        "address": {
+        "signature": {
           "type": "varchar",
-          "length": 255
-        },
-        "protocol": {
-          "type": "varchar",
-          "length": 40
-        },
-        "folder": {
-          "type": "varchar",
-          "length": 255
-        },
-        "tags": {
-          "type": "text"
+          "length": 64
         },
         "status": {
           "type": "varchar",

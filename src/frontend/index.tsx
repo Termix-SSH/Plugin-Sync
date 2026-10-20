@@ -1,9 +1,10 @@
 import { Cloud, Globe, Monitor } from "lucide-react";
 import type { TermixApp } from "@termix-ssh/plugin-sdk/frontend";
 import { AccountSwitcher } from "./AccountSwitcher";
-import { SitesTab } from "./SitesTab";
+import { SitesSetting } from "./SitesTab";
 import { SiteTerminal } from "./SiteTerminal";
 import { setApp } from "./app";
+import { RemoteStatusDot, remoteOf } from "./RemoteHost";
 import { SyncPanel } from "./sync/SyncPanel";
 import { DesktopSyncStep } from "./sync/OnboardingStep";
 import { subscribeSyncStatus } from "./sync/status";
@@ -50,11 +51,32 @@ export function activate(app: TermixApp): void {
   // a pass even when no panel shows it.
   app.onDispose(subscribeSyncStatus(() => {}));
 
-  app.registerTab("sites", SitesTab, {
+  app.registerSettingsComponent("sites", SitesSetting);
+
+  // A mirrored host opens its session through the remote site, so the host's
+  // own address is never dialled from here.
+  app.registerHostAction({
+    id: "site-session",
+    titleKey: "sites.openSession",
     icon: Globe,
-    titleKey: "sites.title",
-    singleton: true,
-    hostless: true,
+    kind: "connect",
+    priority: 500,
+    when: (host) => remoteOf(host, "sync") !== null,
+    run: (host, shell) => {
+      const remote = remoteOf(host, "sync");
+      if (!remote) return;
+      shell.openTab(null, "site_terminal", {
+        label: host.name,
+        forceNewTab: true,
+        data: { siteId: remote.siteId, hostId: remote.remoteId },
+      });
+    },
+  });
+
+  app.registerHostStatusIndicator({
+    id: "site-status",
+    when: (host) => remoteOf(host, "sync") !== null,
+    component: RemoteStatusDot,
   });
 
   app.registerTab("site_terminal", SiteTerminal, {
@@ -62,14 +84,6 @@ export function activate(app: TermixApp): void {
     titleKey: "sites.terminal.title",
     hostless: true,
     session: true,
-  });
-
-  app.registerRailItem({
-    id: "sites",
-    icon: Globe,
-    titleKey: "sites.title",
-    kind: "tab",
-    permission: "sites",
   });
 }
 

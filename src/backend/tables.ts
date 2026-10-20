@@ -2,6 +2,7 @@ import {
   defineTable,
   id,
   integer,
+  refHost,
   refUser,
   text,
   timestamp,
@@ -64,6 +65,10 @@ export const sites = defineTable(
     baseUrl: varchar(255).notNull(),
     // Sealed with the installation key.
     apiKey: text().notNull(),
+    // The user who owns the hosts mirrored from this site.
+    ownerId: refUser(),
+    // Role ids the mirrored hosts are shared with, as JSON.
+    shareRoles: text(),
     options: text(),
     status: varchar(20).notNull(),
     lastError: text(),
@@ -76,18 +81,18 @@ export const sites = defineTable(
   },
 );
 
-// p_sync_site_hosts: the last host list read from each site, read only.
+// p_sync_site_hosts: which Termix host mirrors which host of a site. The host
+// itself is a normal host; this row only remembers where it came from. It goes
+// with the host if the host is deleted.
 export const siteHosts = defineTable(
   "site_hosts",
   {
     id: id(),
     siteId: integer().notNull(),
     remoteId: integer().notNull(),
-    name: varchar(255).notNull(),
-    address: varchar(255),
-    protocol: varchar(40),
-    folder: varchar(255),
-    tags: text(),
+    hostId: refHost(),
+    // What was last written, so an unchanged host is not written again.
+    signature: varchar(64),
     status: varchar(20),
   },
   {

@@ -12,7 +12,7 @@
 
 ## Overview
 
-Sync links the desktop app to one or more Termix servers and keeps an offline copy of each. A server can also add other Termix servers as remote sites, list their hosts and open sessions on them.
+Sync links the desktop app to one or more Termix servers and keeps an offline copy of each. A server can also add other Termix servers as remote sites, keep their SSH hosts in its own host list and open sessions on them.
 
 Read the [docs](https://docs.termix.site/plugins/sync) to set it up and use it.
 
@@ -23,8 +23,8 @@ Read the [docs](https://docs.termix.site/plugins/sync) to set it up and use it.
 - Link the desktop app to a server and keep hosts, credentials and settings in sync, with an offline copy
 - Link several servers and accounts and switch between them, each with its own copy
 - Add other Termix servers as remote sites with an API key
-- See the hosts and health of every remote site in one place
-- Open sessions on remote site hosts, with the remote server doing the connecting
+- The hosts of other Termix servers appear as real hosts in your own list, read only and kept up to date
+- Open a session on one of them like on any host, with the remote server doing the connecting
 - A documented sync protocol that other clients can use
 
 <br />

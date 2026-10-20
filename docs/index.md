@@ -35,8 +35,8 @@ A browser can be signed in to more than one account of the same server. Choose A
 
 ## Permissions
 
-| Permission | What it allows                                             |
-| ---------- | ---------------------------------------------------------- |
-| sites      | Add, edit and remove remote sites and open their sessions. |
+| Permission | What it allows                     |
+| ---------- | ---------------------------------- |
+| sites      | Add, edit and remove remote sites. |
 
 See [Remote sites](./sites) and the [sync protocol](./protocol).

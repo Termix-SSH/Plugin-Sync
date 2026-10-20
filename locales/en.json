@@ -38,10 +38,7 @@
     "removeTitle": "Remove this site?",
     "removeDescription": "{{name}} is forgotten here. The API key stays valid on that server until you delete it there.",
     "emptyTitle": "No remote sites",
-    "empty": "Add another Termix server to see its hosts and open sessions on them from here.",
-    "noHosts": "No hosts yet. The key's user may not have any.",
-    "online": "Online",
-    "offline": "Offline",
+    "empty": "Add another Termix server and its SSH hosts show up in your host list.",
     "openSession": "Open session",
     "hostCount_one": "{{count}} host",
     "hostCount_other": "{{count}} hosts",
@@ -65,7 +62,18 @@
       "closed": "Session closed",
       "failed": "The session failed",
       "unavailable": "Sessions are not available right now"
-    }
+    },
+    "intro": "The SSH hosts of each site appear in your host list in a folder named after the site. They are read only here, change them on the site. Opening one starts the session through the site.",
+    "edit": "Edit",
+    "editTitle": "Edit site",
+    "save": "Save",
+    "saved": "Site saved",
+    "nameHint": "Also the name of the folder its hosts are in.",
+    "apiKeyKeep": "Leave blank to keep the saved key.",
+    "shareWith": "Share the hosts with",
+    "shareHint": "Roles that can see and open them. Only you can by default.",
+    "noRoles": "There are no roles to pick.",
+    "remoteStatus": "Status on the site: {{status}}"
   },
   "sync": {
     "server": "Termix server",
@@ -222,5 +230,10 @@
   "auth": {
     "loadingServer": "Loading server...",
     "serverAuthentication": "Server sign-in"
+  },
+  "settings": {
+    "host": {
+      "site": "Remote site"
+    }
   }
 }

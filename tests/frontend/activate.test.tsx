@@ -54,15 +54,14 @@ function api(sites: unknown[]) {
 }
 
 describe(`${manifest.id} activate`, () => {
-  it("adds the account switcher, the sites tab and its rail item", async () => {
+  it("adds the account switcher, the sites setting and the session tab", async () => {
     rendered = await renderWithApp(plugin, { manifest, locales });
     expect(rendered.registered.slot("shell.accountSwitcher")).toEqual([
       "sync.accountSwitcher",
     ]);
-    expect(rendered.registered.tabs()).toEqual(["sites", "site_terminal"]);
+    expect(rendered.registered.tabs()).toEqual(["site_terminal"]);
     expect(rendered.registered.railItems().map((item) => item.id)).toEqual([
       "sync",
-      "sites",
     ]);
     expect(rendered.registered.panels()).toEqual(["sync"]);
     expect(rendered.registered.onboardingSteps()).toEqual(["desktop"]);
@@ -74,7 +73,7 @@ describe(`${manifest.id} activate`, () => {
       locales,
       api: api([]) as never,
     });
-    rendered.renderTab("sites");
+    rendered.renderSettingsComponent("sites");
     expect(await screen.findByText("No remote sites")).toBeTruthy();
   });
 
@@ -84,7 +83,7 @@ describe(`${manifest.id} activate`, () => {
       locales,
       api: api([site]) as never,
     });
-    rendered.renderTab("sites");
+    rendered.renderSettingsComponent("sites");
     await waitFor(() => expect(screen.getByText("Berlin")).toBeTruthy());
     expect(screen.getAllByText("Connected").length).toBeGreaterThan(1);
     expect(screen.getByText(/2 hosts/)).toBeTruthy();

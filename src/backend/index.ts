@@ -52,6 +52,17 @@ export async function activate(ctx: PluginContext) {
   api.use(createAccountsRouter({ ctx, host, manager, webTable, log }));
   api.use(createSitesRouter(ctx, host, siteStore, log));
   registerSiteTerminal(ctx, siteStore, log);
+
+  // Hosts mirrored from a site stay read only here; the site is the source.
+  ctx.hosts.locks.provide({
+    isLocked: (hostId) => siteStore.siteNameOf(hostId) !== null,
+    note: (hostId) => {
+      const name = siteStore.siteNameOf(hostId);
+      return name ? `Synced from ${name}. Change it on that site.` : null;
+    },
+    allowManualCreate: () => true,
+  });
+  await siteStore.loadMirrored();
   if (host.embedded) {
     // The same routes answer on /sync for core and on the plugin API for the
     // plugin's own screens.
