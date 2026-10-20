@@ -7,6 +7,7 @@ import express, { type Request, type Response } from "express";
 import type {
   PluginSyncHost,
   SyncBasicAuth,
+  SyncClientCert,
   SyncLinkInfo,
   SyncLinkPatch,
   SyncProxyHeader,
@@ -49,6 +50,17 @@ function readBasicAuth(value: unknown): SyncBasicAuth | null {
   };
 }
 
+function readClientCert(value: unknown): SyncClientCert | null {
+  if (!value || typeof value !== "object") return null;
+  const { pfx, passphrase, name } = value as Record<string, unknown>;
+  if (typeof pfx !== "string" || !pfx) return null;
+  return {
+    pfx,
+    passphrase: typeof passphrase === "string" ? passphrase : "",
+    name: typeof name === "string" && name ? name.slice(0, 200) : null,
+  };
+}
+
 export function createClientRouter(
   host: PluginSyncHost,
   manager: EngineManager,
@@ -75,6 +87,7 @@ export function createClientRouter(
       customHeaders: readHeaders(body.customHeaders),
       basicAuth: readBasicAuth(body.basicAuth),
       allowInvalidCertificate: body.allowInvalidCertificate === true,
+      clientCert: readClientCert(body.clientCert),
     };
   }
 
@@ -85,6 +98,8 @@ export function createClientRouter(
     switch (error.kind) {
       case "tls":
         return { problem: "tls_untrusted", message: error.message };
+      case "client_cert":
+        return { problem: "client_cert_invalid", message: error.message };
       case "basic_auth":
         return { problem: "basic_auth_required", message: error.message };
       case "proxy":
@@ -172,6 +187,9 @@ export function createClientRouter(
       basicAuth: link.basicAuth
         ? { username: link.basicAuth.username, password: "", set: true }
         : null,
+      clientCert: link.clientCert
+        ? { name: link.clientCert.name, pfx: "", passphrase: "", set: true }
+        : null,
       entities: await describeEntities(link, engine),
     };
   }
@@ -233,6 +251,7 @@ export function createClientRouter(
           customHeaders: target.customHeaders ?? [],
           basicAuth: target.basicAuth ?? null,
           allowInvalidCertificate: !!target.allowInvalidCertificate,
+          clientCert: target.clientCert ?? null,
         } as SyncLinkInfo)
         .catch(() => {});
       res.json({
@@ -329,6 +348,7 @@ export function createClientRouter(
           customHeaders: target.customHeaders,
           basicAuth: target.basicAuth,
           allowInvalidCertificate: target.allowInvalidCertificate,
+          clientCert: target.clientCert,
           remoteUserId: linked.user.id,
           remoteUsername: linked.user.username,
         });
@@ -468,7 +488,7 @@ export function createClientRouter(
    * /sync/link/settings:
    *   put:
    *     summary: Change what syncs and how the server is reached
-   *     description: Desktop only. disabledTypes lists the kinds of data that stay on this device. Proxy headers and basic auth left blank keep their saved values.
+   *     description: Desktop only. disabledTypes lists the kinds of data that stay on this device. Proxy headers, basic auth and the client certificate left blank keep their saved values.
    *     tags:
    *       - Sync
    *     responses:
@@ -529,8 +549,25 @@ export function createClientRouter(
       if (typeof body.allowInvalidCertificate === "boolean") {
         patch.allowInvalidCertificate = body.allowInvalidCertificate;
       }
+      if (body.clientCert === null) {
+        patch.clientCert = null;
+      } else if (body.clientCert && typeof body.clientCert === "object") {
+        const next = readClientCert(body.clientCert);
+        if (next) patch.clientCert = next;
+      }
 
-      const updated = await host.links.update(patch, userId);
+      let updated;
+      try {
+        updated = await host.links.update(patch, userId);
+      } catch (error) {
+        if (patch.clientCert) {
+          return res.status(400).json({
+            problem: "client_cert_invalid",
+            message: error instanceof Error ? error.message : String(error),
+          });
+        }
+        throw error;
+      }
       await manager.applyProxy(updated);
       manager.engineFor(userId).request(0);
       res.json(await statusBody(userId));

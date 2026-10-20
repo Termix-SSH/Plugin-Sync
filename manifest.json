@@ -22,7 +22,7 @@
   "env": [],
   "engine": {
     "termix": ">=26.10.3",
-    "api": "^1.8"
+    "api": "^1.10"
   },
   "capabilities": [
     "sync:provide",

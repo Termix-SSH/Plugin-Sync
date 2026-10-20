@@ -225,6 +225,7 @@ export function createHost(
         customHeaders: input.customHeaders ?? [],
         basicAuth: input.basicAuth ?? null,
         allowInvalidCertificate: !!input.allowInvalidCertificate,
+        clientCert: input.clientCert ?? null,
         remoteUserId: input.remoteUserId ?? null,
         remoteUsername: input.remoteUsername ?? null,
         account: null,

@@ -3,7 +3,7 @@ Sync keeps the Termix desktop app and your servers in step. The desktop app keep
 ## Link the desktop app to a server
 
 1. Open the desktop app and go to Sync.
-2. Enter the address of your server. Add proxy headers or basic auth if a reverse proxy sits in front of it.
+2. Enter the address of your server. Add proxy headers, basic auth or a client certificate (.pfx or .p12) if a reverse proxy sits in front of it. A certificate in your system store is used on its own.
 3. Sign in to the server. Any sign in method works, including SSO, passkeys and two factor codes.
 4. Choose Merge to add this device's data to the account, or Replace to take the account's data and clear this device's.
 

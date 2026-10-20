@@ -16,6 +16,7 @@ import {
   unlinkServer,
   updateSyncSettings,
   type SyncBasicAuth,
+  type SyncClientCert,
   type SyncConflictItem,
   type SyncEntityInfo,
   type SyncErrorItem,
@@ -111,6 +112,7 @@ export function SyncPanel() {
   const [proxyDraft, setProxyDraft] = useState<{
     customHeaders: SyncProxyHeader[];
     basicAuth: SyncBasicAuth | null;
+    clientCert: SyncClientCert | null;
     allowInvalidCertificate: boolean;
   } | null>(null);
 
@@ -248,6 +250,7 @@ export function SyncPanel() {
   const draft = proxyDraft ?? {
     customHeaders: status.customHeaders ?? [],
     basicAuth: status.basicAuth ?? null,
+    clientCert: status.clientCert ?? null,
     allowInvalidCertificate: !!status.allowInvalidCertificate,
   };
 
@@ -519,6 +522,7 @@ export function SyncPanel() {
         <ProxySettingsFields
           customHeaders={draft.customHeaders}
           basicAuth={draft.basicAuth}
+          clientCert={draft.clientCert}
           onChange={(next) => setProxyDraft({ ...draft, ...next })}
         />
         <div className="flex items-center justify-between gap-3">

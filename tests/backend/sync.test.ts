@@ -359,6 +359,23 @@ describe("desktop routes", () => {
     ]);
   });
 
+  it("saves a client certificate and never sends the file back", async () => {
+    const clientCert = { pfx: "UEZY", passphrase: "pw", name: "me.pfx" };
+    await post("complete", { serverUrl, token: "login-token", clientCert });
+    expect(desktop.link?.clientCert).toEqual(clientCert);
+    const status = await (await fetch(`${clientUrl}/sync/link/status`)).json();
+    expect(status.clientCert).toEqual({
+      name: "me.pfx",
+      pfx: "",
+      passphrase: "",
+      set: true,
+    });
+    await post("settings", { clientCert: { pfx: "", passphrase: "" } }, "PUT");
+    expect(desktop.link?.clientCert).toEqual(clientCert);
+    await post("settings", { clientCert: null }, "PUT");
+    expect(desktop.link?.clientCert).toBeNull();
+  });
+
   it("only gives the linked session when signed in", async () => {
     expect(
       await (await fetch(`${clientUrl}/sync/link/session`)).json(),

@@ -26,6 +26,15 @@ export interface SyncBasicAuth {
   set?: boolean;
 }
 
+export interface SyncClientCert {
+  /** Base64 of the PFX/P12 file. Empty for a saved one. */
+  pfx: string;
+  passphrase: string;
+  name: string | null;
+  /** A saved certificate whose file is not sent back. */
+  set?: boolean;
+}
+
 export interface SyncEntityInfo {
   type: string;
   owner: string;
@@ -58,6 +67,7 @@ export interface SyncStatus {
   allowInvalidCertificate?: boolean;
   customHeaders?: SyncProxyHeader[];
   basicAuth?: SyncBasicAuth | null;
+  clientCert?: SyncClientCert | null;
   entities: SyncEntityInfo[];
 }
 
@@ -66,6 +76,7 @@ export type ProbeProblem =
   | "unreachable"
   | "tls_untrusted"
   | "basic_auth_required"
+  | "client_cert_invalid"
   | "proxy_login"
   | "not_termix"
   | "version_mismatch"
@@ -85,6 +96,7 @@ export interface ServerTarget {
   customHeaders?: SyncProxyHeader[];
   basicAuth?: SyncBasicAuth | null;
   allowInvalidCertificate?: boolean;
+  clientCert?: SyncClientCert | null;
 }
 
 export interface SyncConflictItem {
@@ -140,6 +152,7 @@ export async function updateSyncSettings(settings: {
   customHeaders?: SyncProxyHeader[];
   basicAuth?: SyncBasicAuth | null;
   allowInvalidCertificate?: boolean;
+  clientCert?: SyncClientCert | null;
 }): Promise<SyncStatus> {
   return (await authApi.put("/link/settings", settings)).data;
 }

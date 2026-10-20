@@ -51,6 +51,8 @@ function problemText(
       return t("sync.problems.basicAuthRequired");
     case "proxy_login":
       return t("sync.problems.proxyLogin");
+    case "client_cert_invalid":
+      return t("sync.problems.clientCertInvalid");
     case "not_termix":
       return t("sync.problems.notTermix");
     case "version_mismatch":
@@ -77,6 +79,7 @@ export function LinkServerDialog({
     serverUrl: relogin?.serverUrl ?? "",
     customHeaders: [],
     basicAuth: null,
+    clientCert: null,
     allowInvalidCertificate: false,
   });
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -126,7 +129,8 @@ export function LinkServerDialog({
         setProblem(problemText(t, result.problem, result.message));
         if (
           result.problem === "basic_auth_required" ||
-          result.problem === "proxy_login"
+          result.problem === "proxy_login" ||
+          result.problem === "client_cert_invalid"
         ) {
           setShowAdvanced(true);
         }
@@ -330,6 +334,7 @@ export function LinkServerDialog({
             <ProxySettingsFields
               customHeaders={target.customHeaders ?? []}
               basicAuth={target.basicAuth ?? null}
+              clientCert={target.clientCert ?? null}
               onChange={(next) => setTarget({ ...target, ...next })}
             />
           )}
