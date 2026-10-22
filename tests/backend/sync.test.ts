@@ -343,6 +343,25 @@ describe("desktop routes", () => {
     expect(desktop.names(DESKTOP_USER).a).toBe("local edit");
   });
 
+  it("settles every conflict at once", async () => {
+    server.put(SERVER_USER, "a", "one");
+    server.put(SERVER_USER, "b", "one");
+    await post("complete", { serverUrl, token: "login-token" });
+    await post("sync");
+    desktop.put(DESKTOP_USER, "a", "local a");
+    desktop.put(DESKTOP_USER, "b", "local b");
+    server.put(SERVER_USER, "a", "server a");
+    server.put(SERVER_USER, "b", "server b");
+    await post("sync");
+    expect(desktop.conflicts.get(DESKTOP_USER)).toHaveLength(2);
+    await post("conflicts", { keep: "mine" });
+    expect(desktop.names(DESKTOP_USER)).toMatchObject({
+      a: "local a",
+      b: "local b",
+    });
+    expect(desktop.conflicts.get(DESKTOP_USER) ?? []).toEqual([]);
+  });
+
   it("keeps proxy secrets when settings are saved with blanks", async () => {
     await post("complete", {
       serverUrl,

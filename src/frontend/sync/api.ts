@@ -168,6 +168,12 @@ export async function settleSyncConflict(
   await authApi.post(`/link/conflicts/${id}`, { keep });
 }
 
+export async function settleAllSyncConflicts(
+  keep: "mine" | "server",
+): Promise<{ settled: number; failed: number }> {
+  return (await authApi.post("/link/conflicts", { keep })).data;
+}
+
 export async function getSyncErrors(): Promise<SyncErrorItem[]> {
   return (await authApi.get("/link/errors")).data?.errors ?? [];
 }

@@ -17,6 +17,7 @@ const api = vi.hoisted(() => ({
   unlinkServer: vi.fn(),
   retrySyncErrors: vi.fn(),
   settleSyncConflict: vi.fn(),
+  settleAllSyncConflicts: vi.fn(),
   probeServer: vi.fn(),
   getLinkPreview: vi.fn(),
   completeLink: vi.fn(),
@@ -41,6 +42,7 @@ vi.mock("@termix-ssh/plugin-sdk/ui", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   notifySyncChanged: vi.fn(),
   invalidateServerStatusCache: vi.fn(),
+  useConfirm: () => async () => true,
 }));
 vi.mock("@termix-ssh/plugin-sdk/frontend", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
@@ -120,6 +122,19 @@ describe("SyncPanel", () => {
       expect(api.updateSyncSettings).toHaveBeenCalledWith({
         disabledTypes: expect.arrayContaining(["snippets", "hosts"]),
       }),
+    );
+  });
+
+  it("settles every conflict at once after a confirm", async () => {
+    status.value = { ...LINKED, conflicts: 2 };
+    api.getSyncConflicts.mockResolvedValueOnce([
+      { id: 1, entityType: "hosts", syncId: "a", name: "A", createdAt: "" },
+      { id: 2, entityType: "hosts", syncId: "b", name: "B", createdAt: "" },
+    ] as never);
+    render(<SyncPanel />);
+    fireEvent.click(await screen.findByText("sync.keepAllServer"));
+    await waitFor(() =>
+      expect(api.settleAllSyncConflicts).toHaveBeenCalledWith("server"),
     );
   });
 

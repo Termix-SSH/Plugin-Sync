@@ -4,6 +4,7 @@ import {
   Switch,
   notifySyncChanged,
   invalidateServerStatusCache,
+  useConfirm,
 } from "@termix-ssh/plugin-sdk/ui";
 import { useSyncStatus } from "./use-sync-status";
 import { refreshSyncStatus, setSyncStatus } from "./status";
@@ -12,6 +13,7 @@ import {
   getSyncErrors,
   retrySyncErrors,
   settleSyncConflict,
+  settleAllSyncConflicts,
   syncNow,
   unlinkServer,
   updateSyncSettings,
@@ -98,6 +100,7 @@ function entityLabel(
 export function SyncPanel() {
   const { t } = useTranslation();
   const status = useSyncStatus();
+  const confirm = useConfirm();
   const relativeTime = useRelativeTime();
   const [linkOpen, setLinkOpen] = useState(false);
   const [reloginOpen, setReloginOpen] = useState(false);
@@ -154,6 +157,23 @@ export function SyncPanel() {
     } finally {
       setBusy(null);
     }
+  };
+
+  const settleAll = async (keep: "mine" | "server") => {
+    const ok = await confirm({
+      title: t(
+        keep === "mine" ? "sync.keepAllMineTitle" : "sync.keepAllServerTitle",
+      ),
+      description: t(
+        keep === "mine" ? "sync.keepAllMineBody" : "sync.keepAllServerBody",
+        { count: conflicts.length },
+      ),
+    });
+    if (!ok) return;
+    await run("conflicts:all", async () => {
+      await settleAllSyncConflicts(keep);
+      refreshSyncStatus();
+    });
   };
 
   const groups = useMemo(() => {
@@ -355,6 +375,28 @@ export function SyncPanel() {
           title={t("sync.conflictsTitle")}
           description={t("sync.conflictsDescription")}
         >
+          {conflicts.length > 1 && (
+            <div className="flex justify-end gap-1">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 text-[10px] rounded-none"
+                disabled={busy === "conflicts:all"}
+                onClick={() => void settleAll("mine")}
+              >
+                {t("sync.keepAllMine")}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 text-[10px] rounded-none"
+                disabled={busy === "conflicts:all"}
+                onClick={() => void settleAll("server")}
+              >
+                {t("sync.keepAllServer")}
+              </Button>
+            </div>
+          )}
           {conflicts.map((conflict) => (
             <div
               key={conflict.id}

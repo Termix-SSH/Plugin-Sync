@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1
+
+### Added
+
+- Keep all mine or keep all server settles every sync conflict at once, after a confirm
+
 ## 1.0.0
 
 ### Added

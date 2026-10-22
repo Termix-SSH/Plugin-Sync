@@ -632,6 +632,31 @@ export function createClientRouter(
    *       404:
    *         description: No such conflict.
    */
+  async function settleConflict(
+    userId: string,
+    conflict: {
+      id: number;
+      entityType: string;
+      syncId: string;
+      localRow: string;
+    },
+    keep: unknown,
+  ) {
+    if (keep === "mine") {
+      const entity = host.entities.get(conflict.entityType);
+      if (entity && !entity.readOnly) {
+        const row = JSON.parse(conflict.localRow) as SyncRow;
+        await host.replica.writeRow(
+          conflict.entityType,
+          userId,
+          { ...row, syncId: conflict.syncId },
+          host.replica.resolvers(userId),
+        );
+      }
+    }
+    await host.replica.conflicts.delete(userId, conflict.id);
+  }
+
   router.post(
     "/link/conflicts/:id",
     ...guard,
@@ -643,19 +668,7 @@ export function createClientRouter(
       );
       if (!conflict) return res.status(404).json({ error: "Not found" });
       try {
-        if (req.body?.keep === "mine") {
-          const entity = host.entities.get(conflict.entityType);
-          if (entity && !entity.readOnly) {
-            const row = JSON.parse(conflict.localRow) as SyncRow;
-            await host.replica.writeRow(
-              conflict.entityType,
-              userId,
-              { ...row, syncId: conflict.syncId },
-              host.replica.resolvers(userId),
-            );
-          }
-        }
-        await host.replica.conflicts.delete(userId, conflict.id);
+        await settleConflict(userId, conflict, req.body?.keep);
         manager.engineFor(userId).request(0);
         res.json({ success: true });
       } catch (error) {
@@ -664,6 +677,57 @@ export function createClientRouter(
         });
         res.status(500).json({ error: "Failed to settle conflict" });
       }
+    },
+  );
+
+  /**
+   * @openapi
+   * /sync/link/conflicts:
+   *   post:
+   *     summary: Settle every conflict
+   *     description: Desktop only. keep "mine" puts this device's version of each one back, and the next sync sends them to the server. keep "server" drops them all.
+   *     tags:
+   *       - Sync
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               keep:
+   *                 type: string
+   *                 enum: [mine, server]
+   *     responses:
+   *       200:
+   *         description: Settled. Holds how many were settled and how many failed.
+   *       400:
+   *         description: keep is not mine or server.
+   */
+  router.post(
+    "/link/conflicts",
+    ...guard,
+    async (req: Request, res: Response) => {
+      const userId = userOf(req);
+      const keep = req.body?.keep;
+      if (keep !== "mine" && keep !== "server") {
+        return res.status(400).json({ error: "keep must be mine or server" });
+      }
+      let settled = 0;
+      let failed = 0;
+      for (const conflict of await host.replica.conflicts.list(userId)) {
+        try {
+          await settleConflict(userId, conflict, keep);
+          settled++;
+        } catch (error) {
+          failed++;
+          log.warn("Could not settle a sync conflict", {
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
+      manager.engineFor(userId).request(0);
+      res.json({ success: failed === 0, settled, failed });
     },
   );
 
