@@ -162,6 +162,7 @@
       "clientCertInvalid": "Klienta sertifikāts vai tā parolfrāze nav derīga, vai arī servers to nepieņēma.",
       "proxyLogin": "Vietā Termix atbildēja pieteikšanās lapa vai starpniekserveris. Zemāk pievienojiet nepieciešamās galvenes vai pārbaudiet adresi.",
       "notTermix": "Šajā adresē nav Termix servera. Ja tas darbojas zem ceļa, iekļaujiet to, piemēram, https://example.com/termix.",
+      "syncOff": "Šajā Termix serverī ir atslēgts Sinhronizācijas spraudnis. Administrators to var ieslēgt serverī sadaļā Spraudņi, pēc tam mēģiniet vēlreiz.",
       "versionMismatch": "Šis servers izmanto vecāku Termix versiju. Atjauniniet to uz 2.9 vai jaunāku, lai izveidotu saiti.",
       "differentAccount": "Jūs esat pierakstījies citā kontā. Pierakstieties kontā, ar kuru ir saistīts šis ierīce, vai vispirms atsaistiet ierīci."
     },

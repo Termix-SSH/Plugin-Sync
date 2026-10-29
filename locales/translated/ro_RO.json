@@ -162,6 +162,7 @@
       "clientCertInvalid": "Certificatul clientului sau fraza sa de parolă nu este validă, sau serverul nu l-a acceptat.",
       "proxyLogin": "O pagină de autentificare sau un proxy a răspuns în loc de Termix. Adăugați anteturile necesare mai jos sau verificați adresa.",
       "notTermix": "Nu există un server Termix la această adresă. Dacă rulează pe o cale, includeți-o, de exemplu https://example.com/termix.",
+      "syncOff": "Acest server Termix are pluginul Sync dezactivat. Un administrator îl poate activa în secțiunea Plugins de pe server, apoi puteți încerca din nou.",
       "versionMismatch": "Acest server rulează o versiune mai veche de Termix. Actualizați-l la 2.9 sau mai nou pentru a-l conecta.",
       "differentAccount": "V-ați autentificat într-un cont diferit. Autentificați-vă în contul cu care este legat acest dispozitiv sau deconectați-l mai întâi."
     },

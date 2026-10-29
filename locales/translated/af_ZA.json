@@ -158,6 +158,7 @@
       "clientCertInvalid": "Die kliëntsertifikaat of sy wagwoord is nie geldig nie, of die bediener het dit nie aanvaar nie.",
       "proxyLogin": "'n Aanmeldblad of proxy het geantwoord in plaas van Termix. Voeg die koppe by wat dit benodig hieronder, of kontroleer die adres.",
       "notTermix": "Daar is geen Termix-bedriener op daardie adres nie. As dit onder 'n pad loop, sluit dit in, soos https://example.com/termix.",
+      "syncOff": "Daardie Termix-bedienaar het die Sinkroniseer-plug-in afgeskakel. ’n Admin kan dit inskakel onder Plug-ins op die bedienaar, en dan weer probeer.",
       "versionMismatch": "Daardie bediener loop 'n ouer Termix. Werk dit op na 2.9 of nuwer om te koppel.",
       "differentAccount": "U het by 'n ander rekening aangemeld. Meld aan by die rekening waaraan hierdie toestel gekoppel is, of ontkoppel eers."
     },

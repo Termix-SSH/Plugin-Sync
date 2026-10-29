@@ -158,6 +158,7 @@
       "clientCertInvalid": "A kliens tanúsítvány vagy a jelszava érvénytelen, vagy a szerver nem fogadta el.",
       "proxyLogin": "Bejelentkezési oldal vagy proxy válaszolt a Termix helyett. Add meg lentebb a szükséges fejléceket, vagy ellenőrizd a címet.",
       "notTermix": "Nincs Termix szerver ezen a címen. Ha egy elérési úton fut, add meg azt is, például https://example.com/termix.",
+      "syncOff": "A Termix-szerveren a Szinkronizálás bővítmény letiltva. Egy rendszergazda engedélyezheti a bővítményeket a szerveren, majd próbálja meg újra.",
       "versionMismatch": "Ez a szerver régebbi Termix verziót futtat. Frissítsd 2.9-es vagy újabb verzióra a kapcsolathoz.",
       "differentAccount": "Egy másik fiókba jelentkezett be. Jelentkezzen be abba a fiókba, amelyhez ez az eszköz van kapcsolva, vagy először bontsa meg a kapcsolatot."
     },

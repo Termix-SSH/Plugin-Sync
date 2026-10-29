@@ -166,6 +166,7 @@
       "clientCertInvalid": "Kliento sertifikatas arba jo slaptažodis neteisingi, arba serveris jo nepriėmė.",
       "proxyLogin": "Vietoj Termix atsakė prisijungimo puslapis ar tarpinis serveris. Žemiau pridėkite reikiamus antraštes arba patikrinkite adresą.",
       "notTermix": "Pateiktame adrese nėra Termix serverio. Jei jis veikia po keliu, įtraukite jį, pvz., https://example.com/termix.",
+      "syncOff": "Termix serveryje išjungtas „Sync“ priedas. Administratorius gali jį įjungti serveryje skiltyje „Plugins“, tada bandykite dar kartą.",
       "versionMismatch": "Tame serveryje veikia senesnė Termix versija. Norėdami susieti, atnaujinkite ją į 2.9 arba naujesnę.",
       "differentAccount": "Prisijungėte prie kitos paskyros. Prisijunkite prie paskyros, kurią sieja šis įrenginys, arba pirmiausia atjunkite jį."
     },

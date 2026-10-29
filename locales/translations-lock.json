@@ -134,6 +134,7 @@
   "sync.problems.clientCertInvalid": "8a0e5037d008",
   "sync.problems.proxyLogin": "c2aaa17946ff",
   "sync.problems.notTermix": "a38ca7605f35",
+  "sync.problems.syncOff": "a60b7ba98bcb",
   "sync.problems.versionMismatch": "6f41a3835cdd",
   "sync.problems.differentAccount": "9451a9aff054",
   "sync.wizard.title": "b7bd2e095d55",

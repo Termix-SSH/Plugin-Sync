@@ -162,6 +162,7 @@
       "clientCertInvalid": "El certificado del cliente o su frase de paso no son válidos, o el servidor no los ha aceptado.",
       "proxyLogin": "Una página de inicio de sesión o un proxy ha respondido en lugar de Termix. Añade los encabezados que necesita a continuación o comprueba la dirección.",
       "notTermix": "No hay un servidor de Termix en esa dirección. Si se ejecuta en una ruta, inclúyela, como https://ejemplo.com/termix.",
+      "syncOff": "Ese servidor de Termix tiene el complemento Sync desactivado. Un administrador puede activarlo en Complementos en el servidor y luego volver a intentarlo.",
       "versionMismatch": "Ese servidor ejecuta una versión antigua de Termix. Actualízalo a la 2.9 o superior para vincularlo.",
       "differentAccount": "Has iniciado sesión en una cuenta diferente. Inicia sesión en la cuenta a la que está vinculado este dispositivo o desvincúlalo primero."
     },

@@ -154,6 +154,7 @@
       "clientCertInvalid": "Sertifikat klien atau frasa sandinya tidak valid, atau server tidak menerimanya.",
       "proxyLogin": "Halaman login atau proxy menjawab alih-alih Termix. Tambahkan header yang dibutuhkan di bawah, atau periksa alamatnya.",
       "notTermix": "Tidak ada server Termix di alamat tersebut. Jika berjalan di bawah jalur, sertakan, seperti https://example.com/termix.",
+      "syncOff": "Termix server tersebut memiliki plugin Sinkronisasi yang dimatikan. Admin dapat mengaktifkannya di Plugins pada server, lalu coba lagi.",
       "versionMismatch": "Server tersebut menjalankan Termix yang lebih lama. Perbarui ke versi 2.9 atau lebih baru untuk menghubungkan.",
       "differentAccount": "Anda masuk ke akun yang berbeda. Masuk ke akun yang terhubung dengan perangkat ini, atau putuskan hubungan terlebih dahulu."
     },

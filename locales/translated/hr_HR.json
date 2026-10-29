@@ -162,6 +162,7 @@
       "clientCertInvalid": "Klijentski certifikat ili njegova lozinka nisu valjani ili ih poslužitelj nije prihvatio.",
       "proxyLogin": "Umjesto Termixa odgovorila je prijavna stranica ili proxy. Dodajte potrebne zaglavlja ispod ili provjerite adresu.",
       "notTermix": "Na toj adresi nema Termix poslužitelja. Ako radi pod putanjom, uključite je, npr. https://example.com/termix.",
+      "syncOff": "Na tom Termix poslužitelju dodatak za Sinkronizaciju je isključen. Administrator ga može uključiti u postavkama Dodataka na poslužitelju, nakon čega pokušajte ponovno.",
       "versionMismatch": "Taj poslužitelj koristi stariju verziju Termixa. Ažurirajte ga na verziju 2.9 ili noviju kako biste ga povezali.",
       "differentAccount": "Prijavili ste se na drugi račun. Prijavite se na račun povezan s ovom uređajem ili ga prvo otpovežite."
     },

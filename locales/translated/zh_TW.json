@@ -154,6 +154,7 @@
       "clientCertInvalid": "用戶端憑證或其密碼片語無效，或伺服器未接受該憑證。",
       "proxyLogin": "回應的是登入頁面或代理伺服器，而非 Termix。請在下方新增所需的標頭，或檢查網址。",
       "notTermix": "該地址沒有 Termix 伺服器。如果伺服器運行在特定路徑下，請包含該路徑，例如 https://example.com/termix。",
+      "syncOff": "該 Termix 伺服器已關閉同步外掛程式。管理員可在伺服器的「外掛程式」中將其開啟，然後再試一次。",
       "versionMismatch": "該伺服器運行的是舊版 Termix。請更新至 2.9 或更新版本以進行連結。",
       "differentAccount": "您已登入不同的帳戶。請登入此裝置所連結的帳戶，或先解除連結。"
     },

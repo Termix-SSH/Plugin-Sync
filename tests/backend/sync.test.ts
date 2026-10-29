@@ -137,6 +137,17 @@ describe("after linking", () => {
     expect(JSON.parse(conflicts[0].localRow).name).toBe("local edit");
   });
 
+  it("sends a row again as new when the server lost its record", async () => {
+    await linked();
+    for (const k of [...server.recordsOf(SERVER_USER).keys()])
+      if (k.endsWith("a")) server.recordsOf(SERVER_USER).delete(k);
+    server.rowsOf(SERVER_USER).delete("a");
+    desktop.put(DESKTOP_USER, "a", "edited after a restore");
+    await engine.syncNow();
+    await engine.syncNow();
+    expect(server.names(SERVER_USER).a).toBe("edited after a restore");
+  });
+
   it("does not let one refused change hold up the rest", async () => {
     await linked();
     server.refuse.add("bad");
@@ -255,14 +266,46 @@ describe("server routes", () => {
     expect(response.status).toBe(400);
   });
 
-  it("refreshes a session that ends soon and ends the old one", async () => {
-    const response = await fetch(`${serverUrl}/sync/v2/session/refresh`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: "{}",
+  it("maps many sync ids to this server's ids at once", async () => {
+    const lookup = (body: unknown) =>
+      fetch(`${serverUrl}/sync/v2/ids`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+    const response = await lookup({
+      hosts: ["host-1", "host-2"],
+      things: ["own-a", "other"],
+      unknown: ["own-b"],
     });
-    expect((await response.json()).token).toMatch(/^desktop-session-/);
-    expect(server.revoked).toEqual(["login-session"]);
+    expect(await response.json()).toEqual({
+      hosts: { "host-1": 11 },
+      things: { "own-a": 7 },
+      unknown: {},
+    });
+    expect((await lookup({ hosts: "x" })).status).toBe(400);
+    expect(
+      (await lookup({ hosts: Array.from({ length: 1001 }, (_, i) => `h${i}`) }))
+        .status,
+    ).toBe(400);
+  });
+
+  it("refreshes a session that ends soon and keeps the old one for a moment", async () => {
+    const refresh = async () =>
+      (
+        await (
+          await fetch(`${serverUrl}/sync/v2/session/refresh`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: "{}",
+          })
+        ).json()
+      ).token as string;
+    const token = await refresh();
+    expect(token).toMatch(/^desktop-session-/);
+    // A client that lost the answer asks again and gets the same token.
+    expect(await refresh()).toBe(token);
+    expect(server.revoked).toEqual([]);
   });
 });
 
@@ -288,6 +331,27 @@ describe("desktop routes", () => {
     });
     const ok = await (await post("probe", { serverUrl })).json();
     expect(ok).toMatchObject({ ok: true, name: "Test", version: "26.10.3" });
+  });
+
+  it("says when a Termix server has the Sync plugin off", async () => {
+    const termix = express();
+    termix.get("/users/auth/methods", (_req, res) => {
+      res.json({ methods: [] });
+    });
+    const other = express();
+    const termixHttp = await listen(termix);
+    const otherHttp = await listen(other);
+    try {
+      expect(
+        await (await post("probe", { serverUrl: urlOf(termixHttp) })).json(),
+      ).toEqual({ ok: false, problem: "sync_off" });
+      expect(
+        await (await post("probe", { serverUrl: urlOf(otherHttp) })).json(),
+      ).toMatchObject({ ok: false, problem: "not_termix" });
+    } finally {
+      await new Promise((resolve) => termixHttp.close(resolve));
+      await new Promise((resolve) => otherHttp.close(resolve));
+    }
   });
 
   it("links with a login session, syncs, and unlinks keeping the data", async () => {

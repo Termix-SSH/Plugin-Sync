@@ -435,6 +435,18 @@ export class SyncEngine {
       return;
     }
 
+    // Revision 0 with no row: the server has no record of it at all (lost in
+    // a restore, say). Start over so the next pass sends it as new.
+    if (!result.deleted && !result.row && result.revision === 0) {
+      await replica.records.put(userId, op.entityType, op.syncId, {
+        revision: 0,
+        hash: null,
+        deleted: op.op === "delete",
+      });
+      if (op.op === "upsert") this.request(1000);
+      return;
+    }
+
     // A live row the server could not send says nothing; keep ours to retry.
     if (!result.deleted && !result.row) return;
 

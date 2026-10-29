@@ -162,6 +162,7 @@
       "clientCertInvalid": "El certificat del client o la seva frase de pas no són vàlids, o el servidor no els ha acceptat.",
       "proxyLogin": "Una pàgina d'inici de sessió o un servidor intermediari ha respost en lloc de Termix. Afegeix els capçalers que necessita a sota o comprova l'adreça.",
       "notTermix": "No hi ha cap servidor Termix en aquesta adreça. Si s'executa en una ruta, inclou-la, com ara https://example.com/termix.",
+      "syncOff": "Aquest servidor de Termix té el complement de sincronització desactivat. Un administrador pot activar-lo a la secció de complements del servidor i, a continuació, tornar-ho a provar.",
       "versionMismatch": "Aquest servidor executa una versió antiga de Termix. Actualitza'l a la 2.9 o superior per enllaçar-lo.",
       "differentAccount": "Has iniciat sessió amb un compte diferent. Inicia sessió amb el compte amb què està vinculat aquest dispositiu o desvincula'l primer."
     },

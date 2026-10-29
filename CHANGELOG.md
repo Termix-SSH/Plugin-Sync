@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.1.0
+
+### Added
+
+- POST /sync/v2/ids maps many sync ids to the server's host and snippet ids in one request
+- A dot on the Sync icon shows if the desktop is connected to its server (needs Classic Layout 1.1.0)
+
+### Fixed
+
+- On the desktop, plugins like File Manager, Host Metrics and Tmux Monitor now connect through the server for hosts set to start connections on the server (needs Termix 26.10.6)
+- A lost answer to a session refresh no longer signs the desktop or phone out, the old session keeps working for five minutes
+- A row the server lost (after a restore) is sent again as new instead of retried forever
+- Linking to a Termix server that has the Sync plugin turned off says so, instead of saying there is no Termix server at that address
+
 ## 1.0.1
 
 ### Added

@@ -7,7 +7,7 @@ import { RemoteStatusDot, remoteOf } from "./RemoteHost";
 import { SyncPanel } from "./sync/SyncPanel";
 import { DesktopSyncStep } from "./sync/OnboardingStep";
 import { subscribeSyncStatus } from "./sync/status";
-import { useSyncAttentionCount } from "./sync/use-sync-status";
+import { useSyncAttentionCount, useSyncTone } from "./sync/use-sync-status";
 
 export const ACCOUNT_SLOT = "shell.accountSwitcher";
 
@@ -32,7 +32,8 @@ export function activate(app: TermixApp): void {
     placement: "footer",
     group: "system",
     useBadge: useSyncAttentionCount,
-  });
+    useStatus: useSyncTone,
+  } as Parameters<typeof app.registerRailItem>[0]);
 
   app.registerOnboardingStep({
     id: "desktop",

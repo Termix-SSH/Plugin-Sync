@@ -230,6 +230,22 @@ export function createClientRouter(
   router.post("/link/probe", ...guard, async (req: Request, res: Response) => {
     const target = readTarget(req.body ?? {});
     if (!target) return res.json({ ok: false, problem: "invalid_url" });
+    // A Termix server with the Sync plugin off answers 404 on /sync. Its login
+    // methods route still answers, which tells it apart from another site.
+    const notTermix = async () => {
+      try {
+        const methods = await host.http.json<{ methods?: unknown }>(
+          target,
+          "/users/auth/methods",
+          { timeoutMs: 10_000 },
+        );
+        if (Array.isArray(methods?.methods))
+          return { ok: false, problem: "sync_off" };
+      } catch {
+        // Not Termix after all.
+      }
+      return { ok: false, problem: "not_termix" };
+    };
     try {
       const info = await host.http.json<{
         termix?: boolean;
@@ -237,7 +253,7 @@ export function createClientRouter(
         version?: string;
         protocol?: number;
       }>(target, "/sync/v2/info", { timeoutMs: 15_000 });
-      if (!info?.termix) return res.json({ ok: false, problem: "not_termix" });
+      if (!info?.termix) return res.json(await notTermix());
       if (info.protocol !== SYNC_PROTOCOL_VERSION) {
         return res.json({
           ok: false,
@@ -261,7 +277,15 @@ export function createClientRouter(
         version: info.version ?? null,
       });
     } catch (error) {
-      res.json({ ok: false, ...problemFor(error) });
+      const problem = problemFor(error);
+      const missing =
+        host.http.isRemoteError(error) &&
+        (error as { status?: number }).status === 404;
+      res.json(
+        problem.problem === "not_termix" || missing
+          ? await notTermix()
+          : { ok: false, ...problem },
+      );
     }
   });
 

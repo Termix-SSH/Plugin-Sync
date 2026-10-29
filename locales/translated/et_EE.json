@@ -158,6 +158,7 @@
       "clientCertInvalid": "Kliendi sertifikaat või selle parool ei kehti või server ei aktsepteerinud seda.",
       "proxyLogin": "Termixi asemel vastas sisselogimisleht või proksy. Lisa allolevasse vajalikud päised või kontrolli aadressi.",
       "notTermix": "Sellel aadressil ei asu Termixi serverit. Kui see töötab teatud teel, sisalda see, näiteks https://example.com/termix.",
+      "syncOff": "Sellel Termixi serveril on Sünkroonimine-pliinis lülitatud välja. Serveri haldaja saab selle sisse lülitada Plugins (Pliinisid) menüüs ja seejärel uuesti proovida.",
       "versionMismatch": "See server töötab vanema Termixi versiooniga. Uuenda see versioonile 2.9 või uuemale, et seostada.",
       "differentAccount": "Oled sisseloginud teise kontoga. Logi sisse kontoga, millega see seade on seotud, või eemenda seos enne jätkamist."
     },

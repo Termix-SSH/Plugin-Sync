@@ -154,6 +154,7 @@
       "clientCertInvalid": "Chứng chỉ khách hàng hoặc mật khẩu của nó không hợp lệ, hoặc máy chủ đã từ chối nó.",
       "proxyLogin": "Một trang đăng nhập hoặc proxy đã phản hồi thay vì Termix. Vui lòng thêm các tiêu đề cần thiết bên dưới, hoặc kiểm tra lại địa chỉ.",
       "notTermix": "Không có máy chủ Termix tại địa chỉ đó. Nếu nó chạy trên một đường dẫn cụ thể, hãy bao gồm đường dẫn đó, ví dụ: https://example.com/termix.",
+      "syncOff": "Máy chủ Termix đó đã tắt plugin Đồng bộ hóa. Quản trị viên có thể bật nó trong mục Plugin trên máy chủ, sau đó thử lại.",
       "versionMismatch": "Máy chủ đó đang chạy phiên bản Termix cũ hơn. Vui lòng cập nhật lên phiên bản 2.9 hoặc mới hơn để liên kết.",
       "differentAccount": "Bạn đã đăng nhập vào một tài khoản khác. Vui lòng đăng nhập vào tài khoản mà thiết bị này đang liên kết, hoặc hủy liên kết trước."
     },

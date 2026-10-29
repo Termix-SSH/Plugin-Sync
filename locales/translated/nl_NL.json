@@ -158,6 +158,7 @@
       "clientCertInvalid": "Het clientcertificaat of de wachtzin is ongeldig, of de server heeft het niet geaccepteerd.",
       "proxyLogin": "Er werd een inlogpagina of proxy teruggegeven in plaats van Termix. Voeg hieronder de benodigde headers toe, of controleer het adres.",
       "notTermix": "Op dat adres draait geen Termix-server. Als het onder een pad draait, neem dat dan mee, zoals https://example.com/termix.",
+      "syncOff": "De Sync-plugin is op die Termix-server uitgeschakeld. Een beheerder kan deze inschakelen via Plugins op de server. Probeer het daarna opnieuw.",
       "versionMismatch": "Die server draait een oudere versie van Termix. Werk deze bij naar 2.9 of hoger om te koppelen.",
       "differentAccount": "Je bent ingelogd bij een ander account. Log in bij het account waarmee dit apparaat is gekoppeld, of koppel het eerst los."
     },

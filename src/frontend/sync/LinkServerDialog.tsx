@@ -55,6 +55,8 @@ function problemText(
       return t("sync.problems.clientCertInvalid");
     case "not_termix":
       return t("sync.problems.notTermix");
+    case "sync_off":
+      return t("sync.problems.syncOff");
     case "version_mismatch":
       return t("sync.problems.versionMismatch");
     case "different_account":

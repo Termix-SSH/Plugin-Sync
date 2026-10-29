@@ -23,7 +23,7 @@ export const DESKTOP_USER = "desk-user";
 
 export class FakeRemoteError extends Error {
   constructor(
-    readonly kind: "offline" | "signed_out" | "server",
+    readonly kind: "offline" | "signed_out" | "server" | "proxy",
     message: string,
     readonly status?: number,
   ) {
@@ -290,7 +290,11 @@ export function createHost(
       ensureCore: async () => {},
       onChanged: () => () => {},
       onLocalWrite: () => () => {},
-    },
+      idsOf: async (_type: string, _userId: string, syncIds: string[]) =>
+        Object.fromEntries(
+          syncIds.filter((id) => id.startsWith("own-")).map((id) => [id, 7]),
+        ),
+    } as PluginSyncHost["entities"],
     replica: {
       resolvers: () => ({}),
       loadRows: async (_type, userId) => {
@@ -435,6 +439,14 @@ export function createHost(
               ? JSON.stringify(request.body)
               : undefined,
         });
+        // Like core's client: an answer that is not JSON is not Termix.
+        if (!(response.headers.get("content-type") ?? "").includes("json")) {
+          throw new FakeRemoteError(
+            "proxy",
+            `Something other than Termix answered (${response.status})`,
+            response.status,
+          );
+        }
         const data = await response.json();
         if (response.status === 401) {
           throw new FakeRemoteError("signed_out", "Signed out", 401);
@@ -486,7 +498,8 @@ export function createHost(
         next(),
     },
     hosts: {
-      findForSync: async () => null,
+      findForSync: async (_userId: string, syncId: string) =>
+        syncId === "host-1" ? { id: 11, name: "one" } : null,
       statusBySyncId: async () => ({}),
     },
     plugins: {

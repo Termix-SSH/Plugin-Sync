@@ -166,6 +166,7 @@
       "clientCertInvalid": "Certyfikat klienta lub jego fraza hasłowa są nieprawidłowe, lub serwer ich nie zaakceptował.",
       "proxyLogin": "Zamiast Termix odpowiedziała strona logowania lub proxy. Dodaj wymagane nagłówki poniżej lub sprawdź adres.",
       "notTermix": "Pod tym adresem nie ma serwera Termix. Jeśli działa pod ścieżką, podaj ją, np. https://example.com/termix.",
+      "syncOff": "Serwer Termix ma włączone wtyczki synchronizacji. Administrator może je włączyć w ustawieniach wtyczek na serwerze, a następnie spróbować ponownie.",
       "versionMismatch": "Ten serwer uruchamia starszą wersję Termix. Zaktualizuj go do wersji 2.9 lub nowszej, aby połączyć.",
       "differentAccount": "Zalogowano się na inne konto. Zaloguj się na konto powiązane z tym urządzeniem lub najpierw je odłącz."
     },

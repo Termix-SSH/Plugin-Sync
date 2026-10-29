@@ -154,6 +154,7 @@
       "clientCertInvalid": "Sijil klien atau frasa lalunya tidak sah, atau pelayan tidak menerimanya.",
       "proxyLogin": "Halaman log masuk atau proksi menjawab bukannya Termix. Tambahkan kepala yang diperlukan di bawah, atau semak alamat.",
       "notTermix": "Tiada pelayan Termix di alamat tersebut. Jika ia berjalan di bawah laluan, sertakan laluan itu, seperti https://example.com/termix.",
+      "syncOff": "Pelayan Termix tersebut mempunyai plugin Sync dimatikan. Admin boleh mengaktifkannya dalam Plugins pada pelayan, kemudian cuba lagi.",
       "versionMismatch": "Pelayan tersebut menjalankan versi Termix yang lebih lama. Kemaskini ke 2.9 atau lebih baru untuk menyambungkannya.",
       "differentAccount": "Anda log masuk ke akaun yang berbeza. Log masuk ke akaun yang disambungkan dengan peranti ini, atau nyahsambungkan terlebih dahulu."
     },

@@ -166,6 +166,7 @@
       "clientCertInvalid": "Potrdilo odjemalca ali njegova geslena fraza nista veljavni ali pa ga strežnik ni sprejel.",
       "proxyLogin": "Namesto Termix je odgovorila prijavna stran ali proxy. Dodajte spodaj potrebne glave ali preverite naslov.",
       "notTermix": "Na tem naslovu ni strežnika Termix. Če deluje pod potjo, jo vključite, na primer https://example.com/termix.",
+      "syncOff": "Na tem strežniku Termix je vtičnik Sinhronizacija onemogočen. Skrbnik ga lahko omogoči v razdelku Vtičniki na strežniku, nato pa poskusite znova.",
       "versionMismatch": "Ta strežnik uporablja starejšo različico Termix. Posodobite ga na različico 2.9 ali novejšo za povezavo.",
       "differentAccount": "Prijavili ste se v drug račun. Prijavite se v račun, s katerim je ta naprava povezana, ali najprej prekinite povezavo."
     },

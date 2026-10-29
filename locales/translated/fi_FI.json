@@ -158,6 +158,7 @@
       "clientCertInvalid": "Asiakassertifikaatti tai sen salasanake ei ole voimassa, tai palvelin ei hyväksynyt sitä.",
       "proxyLogin": "Kirjautumissivu tai välityspalvelin vastasi Termixin sijaan. Lisää tarvittavat otsikot alla tai tarkista osoite.",
       "notTermix": "Termix-palvelinta ei löydy kyseisestä osoitteesta. Jos se toimii polun takana, sisällytä se osoitteeseen, kuten https://example.com/termix.",
+      "syncOff": "Sync-liitännäinen on kytketty pois päältä kyseisellä Termix-palvelimella. Ylläpitäjä voi ottaa sen käyttöön palvelimen Liitännäiset-osiosta, jonka jälkeen voit yrittää uudelleen.",
       "versionMismatch": "Palvelimella on vanhempi Termix-versio. Päivitä se versioon 2.9 tai uudempa, jotta voit yhdistää sen.",
       "differentAccount": "Olet kirjautunut toiseen tiliin. Kirjaudu tiliin, johon tämä laite on linkitetty, tai irrota linkitys ensin."
     },

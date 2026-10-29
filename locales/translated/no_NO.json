@@ -158,6 +158,7 @@
       "clientCertInvalid": "Klientsertifikatet eller passfrasen er ugyldig, eller serveren aksepterte det ikke.",
       "proxyLogin": "En innloggingsside eller proxy svarte i stedet for Termix. Legg til de nødvendige headerne nedenfor, eller sjekk adressen.",
       "notTermix": "Det finnes ingen Termix-server på den adressen. Hvis den kjører under en sti, inkluder den, som https://example.com/termix.",
+      "syncOff": "Den Termix-serveren har Sync-pluginet deaktivert. En administrator kan aktivere det under Plugins på serveren, og du kan prøve igjen.",
       "versionMismatch": "Den serveren kjører en eldre versjon av Termix. Oppdater den til 2.9 eller nyere for å koble den.",
       "differentAccount": "Du har logget inn på en annen konto. Logg inn på kontoen denne enheten er koblet til, eller koble den fra først."
     },

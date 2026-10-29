@@ -79,6 +79,7 @@ export type ProbeProblem =
   | "client_cert_invalid"
   | "proxy_login"
   | "not_termix"
+  | "sync_off"
   | "version_mismatch"
   | "different_account";
 

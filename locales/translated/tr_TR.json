@@ -158,6 +158,7 @@
       "clientCertInvalid": "İstemci sertifikası veya parola geçersiz, ya da sunucu bunu kabul etmedi.",
       "proxyLogin": "Termix yerine bir giriş sayfası veya proxy yanıt verdi. Gerekli başlıkları aşağıya ekleyin veya adresi kontrol edin.",
       "notTermix": "Bu adreste bir Termix sunucusu yok. Bir yol altında çalışıyorsa, https://example.com/termix gibi yolunu da ekleyin.",
+      "syncOff": "Bu Termix sunucusunda Eşitleme eklentisi devre dışı bırakılmış. Bir yönetici, sunucudaki Eklentiler bölümünden bunu etkinleştirebilir, ardından tekrar deneyebilirsiniz.",
       "versionMismatch": "Bu sunucu daha eski bir Termix sürümü çalıştırıyor. Bağlamak için 2.9 veya daha yeni bir sürüme güncelleyin.",
       "differentAccount": "Farklı bir hesaba giriş yaptınız. Bu cihazın bağlandığı hesaba giriş yapın veya önce bağlantıyı kaldırın."
     },

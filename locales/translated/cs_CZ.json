@@ -166,6 +166,7 @@
       "clientCertInvalid": "Klientský certifikát nebo jeho přístupové heslo nejsou platné, nebo je server nepřijal.",
       "proxyLogin": "Místo Termix odpověděla přihlašovací stránka nebo proxy. Přidejte níže požadované hlavičky nebo zkontrolujte adresu.",
       "notTermix": "Na této adrese není server Termix. Pokud běží na konkrétní cestě, přidejte ji, například https://example.com/termix.",
+      "syncOff": "Na tomto serveru Termix je plugin Sync vypnutý. Správce ho může zapnout v sekci Pluginy na serveru a poté akci zopakovat.",
       "versionMismatch": "Tento server používá starší verzi Termix. Pro propojení jej aktualizujte na verzi 2.9 nebo novější.",
       "differentAccount": "Přihlásili jste se do jiného účtu. Přihlaste se k účtu, ke kterému je toto zařízení propojeno, nebo jej nejprve odpojte."
     },

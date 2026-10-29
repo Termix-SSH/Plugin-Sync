@@ -154,6 +154,7 @@
       "clientCertInvalid": "客户端证书或其密码无效，或者服务器未接受该证书。",
       "proxyLogin": "返回的是登录页面或代理响应，而非 Termix。请在下方添加所需的请求头，或检查地址是否正确。",
       "notTermix": "该地址上没有 Termix 服务器。如果它运行在某个路径下，请包含该路径，例如 https://example.com/termix。",
+      "syncOff": "该 Termix 服务器已关闭同步插件。管理员可以在服务器的“插件”设置中将其开启，然后重试。",
       "versionMismatch": "该服务器运行的是旧版 Termix。请将其更新至 2.9 或更高版本以进行关联。",
       "differentAccount": "您已登录到另一个账户。请登录与此设备关联的账户，或先解除关联。"
     },

@@ -15,6 +15,19 @@ import type { DeviceStore } from "./devices.js";
 
 const SESSION_DAYS = 365;
 const REFRESH_WITHIN_MS = 60 * 24 * 60 * 60 * 1000;
+// The old session keeps working this long after a refresh, so a client that
+// never got the answer (killed, offline) can ask again and get the same token.
+const MAX_ID_LOOKUPS = 1000;
+
+type EntitiesWithIds = {
+  idsOf?: (
+    type: string,
+    userId: string,
+    syncIds: string[],
+  ) => Promise<Record<string, number>>;
+};
+export const REFRESH_GRACE_MS = 5 * 60 * 1000;
+const refreshed = new Map<string, { token: string; until: number }>();
 const MAX_PAGE = 1000;
 
 interface AuthedRequest extends Request {
@@ -134,7 +147,7 @@ export function createServerRouter(
    * /sync/v2/session/refresh:
    *   post:
    *     summary: Keep a linked client's session from expiring
-   *     description: Returns a fresh device session when the current one ends within 60 days, and ends the old one. Otherwise returns null and the client keeps its token.
+   *     description: Returns a fresh device session when the current one ends within 60 days, and ends the old one five minutes later. Asking again with the old token in that time returns the same new token. Otherwise returns null and the client keeps its token.
    *     tags:
    *       - Sync
    *     responses:
@@ -151,6 +164,9 @@ export function createServerRouter(
       const sessionId = (req as AuthedRequest).sessionId;
       try {
         if (!sessionId) return res.json({ token: null });
+        const earlier = refreshed.get(sessionId);
+        if (earlier && earlier.until > Date.now())
+          return res.json({ token: earlier.token });
         const session = await host.sessions.find(sessionId);
         if (!session)
           return res.status(401).json({ error: "Session not found" });
@@ -160,7 +176,14 @@ export function createServerRouter(
           days: SESSION_DAYS,
           deviceInfo: session.deviceInfo ?? "Termix Desktop (sync)",
         });
-        await host.sessions.revoke(sessionId);
+        refreshed.set(sessionId, {
+          token,
+          until: Date.now() + REFRESH_GRACE_MS,
+        });
+        setTimeout(() => {
+          refreshed.delete(sessionId);
+          void host.sessions.revoke(sessionId).catch(() => {});
+        }, REFRESH_GRACE_MS).unref?.();
         res.json({ token });
       } catch (error) {
         log.error("Failed to refresh a desktop session", error);
@@ -391,6 +414,69 @@ export function createServerRouter(
       }
     },
   );
+
+  /**
+   * @openapi
+   * /sync/v2/ids:
+   *   post:
+   *     summary: This server's ids for many rows, by sync id
+   *     description: The batch form of /sync/v2/hosts/{syncId}. Send lists of sync ids by type (hosts, snippets and so on). Hosts are the ones the caller can connect to, other types only the caller's own rows. Unknown ids are left out. Up to 1000 ids in all.
+   *     tags:
+   *       - Sync
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             additionalProperties:
+   *               type: array
+   *               items:
+   *                 type: string
+   *     responses:
+   *       200:
+   *         description: Ids by type, then by sync id.
+   *       400:
+   *         description: The body is not lists of sync ids, or has too many.
+   */
+  router.post("/v2/ids", authenticate, async (req: Request, res: Response) => {
+    const body = (req.body ?? {}) as Record<string, unknown>;
+    const wanted = new Map<string, string[]>();
+    let total = 0;
+    for (const [type, list] of Object.entries(body)) {
+      if (
+        !Array.isArray(list) ||
+        !list.every((id) => typeof id === "string" && id.length <= 200)
+      )
+        return res.status(400).json({ error: "Expected lists of sync ids" });
+      total += list.length;
+      wanted.set(type, [...new Set(list as string[])]);
+    }
+    if (total > MAX_ID_LOOKUPS)
+      return res.status(400).json({ error: "Too many sync ids" });
+    try {
+      const userId = userOf(req);
+      // Termix 26.10.6 and later; older cores answer hosts only.
+      const idsOf = (host.entities as EntitiesWithIds).idsOf;
+      const result: Record<string, Record<string, number>> = {};
+      for (const [type, syncIds] of wanted) {
+        const ids: Record<string, number> = {};
+        if (type === "hosts") {
+          for (const syncId of syncIds) {
+            const found = await host.hosts.findForSync(userId, syncId);
+            if (found) ids[syncId] = found.id;
+          }
+        } else if (idsOf && host.entities.get(type)) {
+          Object.assign(ids, await idsOf(type, userId, syncIds));
+        }
+        result[type] = ids;
+      }
+      res.json(result);
+    } catch (error) {
+      log.error("Failed to look up ids by sync id", error);
+      res.status(500).json({ error: "Failed to look up ids" });
+    }
+  });
 
   /**
    * @openapi
