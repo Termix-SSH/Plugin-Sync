@@ -397,10 +397,29 @@ export function createSites(
     }
   }
 
+  /** One alert when a site stops answering and one when it is back. */
+  async function alert(row: any, back: boolean, message: string) {
+    if ((await ctx.settings.get<boolean>("alertOnSiteErrors")) === false)
+      return;
+    await ctx.notify
+      .send({
+        title: back
+          ? `Site back: ${row.name}`
+          : `Site unreachable: ${row.name}`,
+        body: back ? "The site answers again." : message,
+        severity: back ? "info" : "warning",
+        category: `sync.${back ? "site-back" : "site-down"}`,
+        audience: { userId: row.ownerId },
+        dedupeKey: `sync:site:${row.id}:${back ? "back" : "down"}`,
+      })
+      .catch(() => {});
+  }
+
   /** Reads the remote's hosts and status and mirrors them. */
   async function refresh(id: number): Promise<SiteRecord> {
     const row = await getRow(id);
     if (!row) throw new SiteError("No such site", 404);
+    const wasDown = row.status === "error";
     const client = await db();
     try {
       const remote = await call<RemoteHost[]>(row, "/host/db/host");
@@ -422,9 +441,11 @@ export function createSites(
           lastSeenAt: new Date().toISOString(),
         })
         .where(eq(stores.sites.id, id));
+      if (wasDown) await alert(row, true, "");
     } catch (error) {
       const message = describeError(error);
       log.warn("Could not refresh a site", { site: row.name, error: message });
+      if (!wasDown) await alert(row, false, message);
       await client
         .update(stores.sites)
         .set({ status: "error", lastError: message })

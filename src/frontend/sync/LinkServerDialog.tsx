@@ -9,6 +9,7 @@ import {
   InlineView,
   Input,
   Switch,
+  LoadingState,
 } from "@termix-ssh/plugin-sdk/ui";
 import { ElectronLoginForm } from "./ElectronLoginForm";
 import {
@@ -437,10 +438,7 @@ export function LinkServerDialog({
       )}
 
       {step === "finishing" && (
-        <div className="flex items-center gap-3 py-6 text-sm text-muted-foreground">
-          <Loader2 className="size-5 animate-spin text-accent-brand" />
-          {t("sync.wizard.linking")}
-        </div>
+        <LoadingState compact label={t("sync.wizard.linking")} />
       )}
     </>
   );

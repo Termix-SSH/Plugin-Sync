@@ -238,6 +238,31 @@
   "settings": {
     "host": {
       "site": "Etäpaikka"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Ilmoita, kun sivustoa ei voida saavuttaa",
+        "description": "Lähetä ilmoitus, kun etäpaikka lakkaa vastaamasta ja kun se alkaa taas vastata."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Listaa etäpaikat"
+    },
+    "refresh": {
+      "title": "Päivitä etäpaikka"
+    },
+    "site": "Etäpaikka",
+    "sites": {
+      "title": "Etäpaikat"
+    }
+  },
+  "card": {
+    "title": "Etäpaikat",
+    "loading": "Ladataan",
+    "empty": "Etäpaikkoja ei vielä ole.",
+    "sites": "{{reachable}}/{{total}} etäpaikkaa saavutettavissa",
+    "hosts": "{{online}} palvelinta käytössä, {{offline}} poissa käytöstä"
   }
 }

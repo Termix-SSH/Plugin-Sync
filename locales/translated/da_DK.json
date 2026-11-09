@@ -238,6 +238,31 @@
   "settings": {
     "host": {
       "site": "Fjernsted"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Advar, når en side ikke kan nås",
+        "description": "Send en advarsel, når en fjern side holder op med at svare, og når den kommer tilbage."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Vis liste over fjerne sider"
+    },
+    "refresh": {
+      "title": "Opdater fjern side"
+    },
+    "site": "Side",
+    "sites": {
+      "title": "Fjerne sider"
+    }
+  },
+  "card": {
+    "title": "Fjerne sider",
+    "loading": "Indlæser",
+    "empty": "Der er ingen fjerne sider endnu.",
+    "sites": "{{reachable}} af {{total}} sider kan nås",
+    "hosts": "{{online}} værter online, {{offline}} offline"
   }
 }

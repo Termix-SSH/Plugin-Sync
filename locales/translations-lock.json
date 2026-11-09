@@ -193,5 +193,16 @@
   "errors.failedToLoadServer": "ca3883f9cad7",
   "auth.loadingServer": "3ef2dd15f566",
   "auth.serverAuthentication": "a700f10c9a11",
-  "settings.host.site": "8f57921ab04f"
+  "settings.host.site": "8f57921ab04f",
+  "settings.admin.alertOnSiteErrors.label": "c3fe51331673",
+  "settings.admin.alertOnSiteErrors.description": "417093c005bc",
+  "operations.list.title": "e58502580d5b",
+  "operations.refresh.title": "70430a625825",
+  "operations.site": "5b6825d3c67a",
+  "operations.sites.title": "cfd1a86aa409",
+  "card.title": "cfd1a86aa409",
+  "card.loading": "8f26c6520d61",
+  "card.empty": "5afc54aa809a",
+  "card.sites": "ce28f65b613f",
+  "card.hosts": "0bb24aa708e6"
 }

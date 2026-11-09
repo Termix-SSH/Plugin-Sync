@@ -244,6 +244,31 @@
   "settings": {
     "host": {
       "site": "Site distant"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Alerter lorsqu'un site est inaccessible",
+        "description": "Envoyer une alerte lorsqu'un site distant cesse de répondre et lorsqu'il redevient accessible."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Lister les sites distants"
+    },
+    "refresh": {
+      "title": "Actualiser le site distant"
+    },
+    "site": "Site",
+    "sites": {
+      "title": "Sites distants"
+    }
+  },
+  "card": {
+    "title": "Sites distants",
+    "loading": "Chargement",
+    "empty": "Aucun site distant pour le moment.",
+    "sites": "{{reachable}} site(s) sur {{total}} accessibles",
+    "hosts": "{{online}} hôte(s) en ligne, {{offline}} hors ligne"
   }
 }

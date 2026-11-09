@@ -238,6 +238,31 @@
   "settings": {
     "host": {
       "site": "Remote-Standort"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Benachrichtigung, wenn eine Site nicht erreichbar ist",
+        "description": "Sende eine Benachrichtigung, wenn eine Remote-Site nicht mehr antwortet und wenn sie wieder erreichbar ist."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Remote-Sites auflisten"
+    },
+    "refresh": {
+      "title": "Remote-Site aktualisieren"
+    },
+    "site": "Site",
+    "sites": {
+      "title": "Remote-Sites"
+    }
+  },
+  "card": {
+    "title": "Remote-Sites",
+    "loading": "Wird geladen",
+    "empty": "Noch keine Remote-Sites.",
+    "sites": "{{reachable}} von {{total}} Sites erreichbar",
+    "hosts": "{{online}} Hosts online, {{offline}} offline"
   }
 }

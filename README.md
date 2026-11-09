@@ -32,6 +32,7 @@ Read the [docs](https://docs.termix.site/plugins/sync) to set it up and use it.
 - The hosts of other Termix servers appear as real hosts in your own list, read only and kept up to date
 - Open a session on one of them like on any host, with the remote server doing the connecting
 - A documented sync protocol that other clients can use
+- A dashboard card with remote sites, and an alert when one stops answering
 
 <br />
 

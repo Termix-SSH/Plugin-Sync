@@ -238,6 +238,31 @@
   "settings": {
     "host": {
       "site": "Távoli hely"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Riasztás, ha egy távoli helyszín nem érhető el",
+        "description": "Riasztás küldése, amikor egy távoli helyszín nem válaszol, és amikor újra elérhetővé válik."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Távoli helyszínek listázása"
+    },
+    "refresh": {
+      "title": "Távoli helyszín frissítése"
+    },
+    "site": "Helyszín",
+    "sites": {
+      "title": "Távoli helyszínek"
+    }
+  },
+  "card": {
+    "title": "Távoli helyszínek",
+    "loading": "Betöltés",
+    "empty": "Még nincsenek távoli helyszínek.",
+    "sites": "{{reachable}}/{{total}} helyszín elérhető",
+    "hosts": "{{online}} host online, {{offline}} offline"
   }
 }

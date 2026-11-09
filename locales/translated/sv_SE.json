@@ -238,6 +238,31 @@
   "settings": {
     "host": {
       "site": "Fjärrplats"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Varna när en webbplats inte kan nås",
+        "description": "Skicka en varning när en fjärrwebbplats slutar svara och när den blir tillgänglig igen."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Lista fjärrwebbplatser"
+    },
+    "refresh": {
+      "title": "Uppdatera fjärrwebbplats"
+    },
+    "site": "Webbplats",
+    "sites": {
+      "title": "Fjärrwebbplatser"
+    }
+  },
+  "card": {
+    "title": "Fjärrwebbplatser",
+    "loading": "Laddar",
+    "empty": "Inga fjärrwebbplatser ännu.",
+    "sites": "{{reachable}} av {{total}} webbplatser nåbara",
+    "hosts": "{{online}} värdar online, {{offline}} offline"
   }
 }

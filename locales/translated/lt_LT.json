@@ -250,6 +250,31 @@
   "settings": {
     "host": {
       "site": "Nuotolinė svetainė"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Įspėti, kai svetainė nepasiekiama",
+        "description": "Siųsti įspėjimą, kai nuotolinė svetainė nustoja atsakyti ir kai vėl tampa pasiekiama."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Nuotolinių svetainių sąrašas"
+    },
+    "refresh": {
+      "title": "Atnaujinti nuotolinę svetainę"
+    },
+    "site": "Svetainė",
+    "sites": {
+      "title": "Nuotolinės svetainės"
+    }
+  },
+  "card": {
+    "title": "Nuotolinės svetainės",
+    "loading": "Kraunama",
+    "empty": "Dar nėra nuotolinių svetainių.",
+    "sites": "{{reachable}} iš {{total}} svetainių pasiekiamos",
+    "hosts": "{{online}} serverių prisijungę, {{offline}} atjungti"
   }
 }

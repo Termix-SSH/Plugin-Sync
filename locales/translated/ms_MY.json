@@ -230,6 +230,31 @@
   "settings": {
     "host": {
       "site": "Laman jauh"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Amaran apabila tapak tidak dapat dicapai",
+        "description": "Hantar amaran apabila tapak jauh berhenti menjawab dan apabila ia kembali."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Senaraikan tapak jauh"
+    },
+    "refresh": {
+      "title": "Muat semula tapak jauh"
+    },
+    "site": "Tapak",
+    "sites": {
+      "title": "Tapak jauh"
+    }
+  },
+  "card": {
+    "title": "Tapak jauh",
+    "loading": "Memuat",
+    "empty": "Tiada tapak jauh lagi.",
+    "sites": "{{reachable}} daripada {{total}} tapak boleh dicapai",
+    "hosts": "{{online}} host dalam talian, {{offline}} luar talian"
   }
 }

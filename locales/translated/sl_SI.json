@@ -250,6 +250,31 @@
   "settings": {
     "host": {
       "site": "Oddaljeno spletno mesto"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Opozori, ko spletnega mesta ni mogoče doseči",
+        "description": "Pošlji opozorilo, ko oddaljeno spletno mesto preneha odgovarjati in ko se ponovno poveže."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Seznam oddaljenih spletnih mest"
+    },
+    "refresh": {
+      "title": "Osveži oddaljeno spletno mesto"
+    },
+    "site": "Spletno mesto",
+    "sites": {
+      "title": "Oddaljena spletna mesta"
+    }
+  },
+  "card": {
+    "title": "Oddaljena spletna mesta",
+    "loading": "Nalaganje",
+    "empty": "Še ni oddaljenih spletnih mest.",
+    "sites": "{{reachable}} od {{total}} spletnih mest je dosegljivih",
+    "hosts": "{{online}} gostiteljev je aktivnih, {{offline}} neaktivnih"
   }
 }

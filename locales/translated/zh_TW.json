@@ -232,6 +232,31 @@
   "settings": {
     "host": {
       "site": "遠端站台"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "當站台無法連線時發出警示",
+        "description": "當遠端站台停止回應或恢復連線時，傳送警示通知。"
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "列出遠端站台"
+    },
+    "refresh": {
+      "title": "重新整理遠端站台"
+    },
+    "site": "站台",
+    "sites": {
+      "title": "遠端站台"
+    }
+  },
+  "card": {
+    "title": "遠端站台",
+    "loading": "載入中",
+    "empty": "目前尚無遠端站台。",
+    "sites": "{{reachable}} / {{total}} 個站台可連線",
+    "hosts": "{{online}} 個主機線上，{{offline}} 個離線"
   }
 }

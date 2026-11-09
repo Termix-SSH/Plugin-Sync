@@ -9,6 +9,7 @@ import { createAccountsRouter } from "./accounts-routes.js";
 import { EngineManager } from "./engines.js";
 import { createSites } from "./sites.js";
 import { createSitesRouter } from "./sites-routes.js";
+import { registerOperations } from "./operations.js";
 import { registerSiteTransport } from "./site-transport.js";
 import { registerOriginTransport } from "./origin-transport.js";
 
@@ -53,6 +54,7 @@ export async function activate(ctx: PluginContext) {
   api.use(createAccountsRouter({ ctx, host, manager, webTable, log }));
   api.use(createSitesRouter(ctx, host, siteStore, log));
   registerSiteTransport(ctx, siteStore);
+  registerOperations(ctx, siteStore);
   registerOriginTransport(ctx, host);
 
   // Hosts mirrored from a site stay read only here; the site is the source.

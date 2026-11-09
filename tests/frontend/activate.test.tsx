@@ -111,3 +111,17 @@ describe("the sync panel", () => {
     expect(await screen.findByText(locales.sync.unlinkedTitle)).toBeTruthy();
   });
 });
+
+describe("remote sites dashboard card", () => {
+  it("shows how many sites answer", async () => {
+    rendered = await renderWithApp(plugin, {
+      manifest,
+      locales,
+      permissions: ["sync.sites"],
+      api: api([site]) as never,
+    });
+    expect(rendered.registered.dashboardCards()).toEqual(["sync-sites"]);
+    rendered.renderDashboardCard("sync-sites");
+    expect(await screen.findByText("1 of 1 sites reachable")).toBeTruthy();
+  });
+});

@@ -238,6 +238,31 @@
   "settings": {
     "host": {
       "site": "Ekstern side"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Varsle når en vertsmappe ikke kan nås",
+        "description": "Send en varsel når en fjern vertsmappe slutter å svare og når den kommer tilbake."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Liste over fjern vertsmappe"
+    },
+    "refresh": {
+      "title": "Oppdater fjern vertsmappe"
+    },
+    "site": "Vertsmappe",
+    "sites": {
+      "title": "Fjern vertsmappe"
+    }
+  },
+  "card": {
+    "title": "Fjern vertsmappe",
+    "loading": "Laster",
+    "empty": "Ingen fjern vertsmappe ennå.",
+    "sites": "{{reachable}} av {{total}} vertsmappe kan nås",
+    "hosts": "{{online}} vert er tilgjengelig, {{offline}} utilgjengelig"
   }
 }

@@ -1,6 +1,7 @@
 import { Cloud, Monitor } from "lucide-react";
 import type { TermixApp } from "@termix-ssh/plugin-sdk/frontend";
 import { AccountSwitcher } from "./AccountSwitcher";
+import { SitesCard } from "./SitesCard";
 import { SitesSetting } from "./SitesTab";
 import { setApp } from "./app";
 import { RemoteStatusDot, remoteOf } from "./RemoteHost";
@@ -50,6 +51,15 @@ export function activate(app: TermixApp): void {
   // Keeps the sync status polled while the app is open, so views reload after
   // a pass even when no panel shows it.
   app.onDispose(subscribeSyncStatus(() => {}));
+
+  app.registerDashboardCard({
+    id: "sync-sites",
+    titleKey: "card.title",
+    defaultPanel: "side",
+    defaultHeight: 120,
+    frame: "framed",
+    component: SitesCard,
+  });
 
   app.registerSettingsComponent("sites", SitesSetting);
 

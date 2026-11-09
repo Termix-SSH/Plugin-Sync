@@ -232,6 +232,31 @@
   "settings": {
     "host": {
       "site": "远程站点"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "当站点无法访问时发送警报",
+        "description": "当远程站点停止响应以及恢复连接时发送警报。"
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "列出远程站点"
+    },
+    "refresh": {
+      "title": "刷新远程站点"
+    },
+    "site": "站点",
+    "sites": {
+      "title": "远程站点"
+    }
+  },
+  "card": {
+    "title": "远程站点",
+    "loading": "加载中",
+    "empty": "暂无远程站点。",
+    "sites": "{{reachable}} / {{total}} 个站点可访问",
+    "hosts": "{{online}} 个主机在线，{{offline}} 个离线"
   }
 }

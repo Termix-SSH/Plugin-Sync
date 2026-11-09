@@ -232,6 +232,31 @@
   "settings": {
     "host": {
       "site": "リモートサイト"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "サイトに到達できない場合にアラートを表示",
+        "description": "リモートサイトが応答を停止した場合と、応答を再開した場合にアラートを送信します。"
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "リモートサイトのリスト"
+    },
+    "refresh": {
+      "title": "リモートサイトを再読み込み"
+    },
+    "site": "サイト",
+    "sites": {
+      "title": "リモートサイト"
+    }
+  },
+  "card": {
+    "title": "リモートサイト",
+    "loading": "読み込み中",
+    "empty": "まだリモートサイトがありません。",
+    "sites": "{{total}} サイト中 {{reachable}} サイトに到達可能",
+    "hosts": "{{online}} ホストがオンライン、{{offline}} ホストがオフライン"
   }
 }

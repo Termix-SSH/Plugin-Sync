@@ -230,6 +230,31 @@
   "settings": {
     "host": {
       "site": "Trang web từ xa"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Cảnh báo khi không thể truy cập trang web",
+        "description": "Gửi cảnh báo khi trang web từ xa ngừng phản hồi và khi nó hoạt động trở lại."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Liệt kê các trang web từ xa"
+    },
+    "refresh": {
+      "title": "Làm mới trang web từ xa"
+    },
+    "site": "Trang web",
+    "sites": {
+      "title": "Các trang web từ xa"
+    }
+  },
+  "card": {
+    "title": "Các trang web từ xa",
+    "loading": "Đang tải",
+    "empty": "Chưa có trang web từ xa nào.",
+    "sites": "{{reachable}} trong số {{total}} trang web có thể truy cập",
+    "hosts": "{{online}} máy chủ trực tuyến, {{offline}} ngoại tuyến"
   }
 }

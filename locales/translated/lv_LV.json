@@ -244,6 +244,31 @@
   "settings": {
     "host": {
       "site": "Tālvadības vietne"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Brīdināt, ja vietni nevar sasniegt",
+        "description": "Nosūtīt brīdinājumu, kad attālinātā vietna pārtrauc atbildēt un kad tā atkal kļūst pieejama."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Attālināto vietņu saraksts"
+    },
+    "refresh": {
+      "title": "Atsvaidzināt attālināto vietni"
+    },
+    "site": "Vietne",
+    "sites": {
+      "title": "Attālinātās vietnes"
+    }
+  },
+  "card": {
+    "title": "Attālinātās vietnes",
+    "loading": "Ielādē",
+    "empty": "Vēl nav attālinātu vietņu.",
+    "sites": "Sasniegamas {{reachable}} no {{total}} vietnēm",
+    "hosts": "{{online}} mezgli tiešsaistē, {{offline}} bezsaistē"
   }
 }

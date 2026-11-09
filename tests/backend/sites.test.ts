@@ -129,6 +129,7 @@ beforeEach(async () => {
       "hosts:write",
       "users:impersonate",
       "ssh:transport",
+      "notify:send",
     ],
     db: db.database,
     shareableRoles: [{ id: 5, name: "ops", displayName: "Ops" }],
@@ -356,6 +357,19 @@ describe("remote sites", () => {
     remote.rejectKey = true;
     await store.refresh(body.site.id);
     expect(await mirrored()).toHaveLength(2);
+  });
+
+  it("alerts once when a site goes down and once when it is back", async () => {
+    const { body } = await add();
+    remote.rejectKey = true;
+    await store.refresh(body.site.id);
+    await store.refresh(body.site.id);
+    expect(mock.notifications).toHaveLength(1);
+    expect(mock.notifications[0].notification.category).toBe("sync.site-down");
+    remote.rejectKey = false;
+    await store.refresh(body.site.id);
+    expect(mock.notifications).toHaveLength(2);
+    expect(mock.notifications[1].notification.category).toBe("sync.site-back");
   });
 
   it("rolls up health across sites", async () => {

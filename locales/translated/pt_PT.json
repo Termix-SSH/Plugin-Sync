@@ -244,6 +244,31 @@
   "settings": {
     "host": {
       "site": "Local remoto"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Avisar quando um site não estiver acessível",
+        "description": "Enviar um alerta quando um site remoto deixar de responder e quando voltar a estar disponível."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Listar sites remotos"
+    },
+    "refresh": {
+      "title": "Atualizar site remoto"
+    },
+    "site": "Site",
+    "sites": {
+      "title": "Sites remotos"
+    }
+  },
+  "card": {
+    "title": "Sites remotos",
+    "loading": "A carregar",
+    "empty": "Ainda não há sites remotos.",
+    "sites": "{{reachable}} de {{total}} sites acessíveis",
+    "hosts": "{{online}} hosts online, {{offline}} offline"
   }
 }

@@ -238,6 +238,31 @@
   "settings": {
     "host": {
       "site": "Kaugasukoht"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Teata, kui saidile ei saa ligi",
+        "description": "Saada teade, kui kaugserver lakkab vastamast ja kui ta uuesti vastama hakkab."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Kaugserverite loendamine"
+    },
+    "refresh": {
+      "title": "Kaugserveri värskendamine"
+    },
+    "site": "Server",
+    "sites": {
+      "title": "Kaugserverid"
+    }
+  },
+  "card": {
+    "title": "Kaugserverid",
+    "loading": "Laadimine",
+    "empty": "Kaugservereid pole veel lisatud.",
+    "sites": "{{reachable}}/{{total}} serverit saadaval",
+    "hosts": "{{online}} serverit online, {{offline}} offline"
   }
 }

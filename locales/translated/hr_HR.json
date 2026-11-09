@@ -244,6 +244,31 @@
   "settings": {
     "host": {
       "site": "Udaljeno mjesto"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Upozori kada se stranica ne može doseći",
+        "description": "Pošalji upozorenje kada udaljena stranica prestane odgovarati i kada ponovno postane dostupna."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Popis udaljenih stranica"
+    },
+    "refresh": {
+      "title": "Osvježi udaljenu stranicu"
+    },
+    "site": "Stranica",
+    "sites": {
+      "title": "Udaljene stranice"
+    }
+  },
+  "card": {
+    "title": "Udaljene stranice",
+    "loading": "Učitavanje",
+    "empty": "Još nema udaljenih stranica.",
+    "sites": "{{reachable}} od {{total}} stranica dostupno",
+    "hosts": "{{online}} hostova online, {{offline}} offline"
   }
 }

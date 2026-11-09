@@ -244,6 +244,31 @@
   "settings": {
     "host": {
       "site": "Lloc remot"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Avisa quan un lloc no es pot arribar",
+        "description": "Envia una alerta quan un lloc remot deixi de respondre i quan torni a estar disponible."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Llista llocs remots"
+    },
+    "refresh": {
+      "title": "Actualitza el lloc remot"
+    },
+    "site": "Lloc",
+    "sites": {
+      "title": "Llocs remots"
+    }
+  },
+  "card": {
+    "title": "Llocs remots",
+    "loading": "Carregant",
+    "empty": "Encara no hi ha llocs remots.",
+    "sites": "{{reachable}} de {{total}} llocs accessibles",
+    "hosts": "{{online}} amfitrions en línia, {{offline}} fora de línia"
   }
 }

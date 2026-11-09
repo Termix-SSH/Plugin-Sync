@@ -4,9 +4,10 @@ import {
   AlertDescription,
   AlertTitle,
   getErrorMessage,
+  LoadingState,
 } from "@termix-ssh/plugin-sdk/ui";
 import { useTranslation } from "@termix-ssh/plugin-sdk/frontend";
-import { AlertCircle, Loader2, ArrowLeft, RefreshCw } from "lucide-react";
+import { AlertCircle, ArrowLeft, RefreshCw } from "lucide-react";
 
 interface ElectronLoginFormProps {
   serverUrl: string;
@@ -250,9 +251,7 @@ export function ElectronLoginForm({
   return (
     <div className="relative w-full h-full bg-background flex flex-col">
       {isAuthenticating && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background z-50">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+        <LoadingState className="absolute inset-0 bg-background z-50" />
       )}
 
       {!isAuthenticating && (
@@ -296,12 +295,7 @@ export function ElectronLoginForm({
           className="absolute inset-0 flex items-center justify-center bg-background z-40"
           style={{ marginTop: "60px" }}
         >
-          <div className="flex items-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="ml-3 text-muted-foreground">
-              {t("auth.loadingServer")}
-            </span>
-          </div>
+          <LoadingState label={t("auth.loadingServer")} />
         </div>
       )}
 

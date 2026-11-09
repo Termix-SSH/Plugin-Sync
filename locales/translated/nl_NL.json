@@ -238,6 +238,31 @@
   "settings": {
     "host": {
       "site": "Externe site"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Waarschuwing wanneer een site niet bereikbaar is",
+        "description": "Stuur een waarschuwing wanneer een externe site niet meer reageert en wanneer deze weer beschikbaar is."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Externe sites weergeven"
+    },
+    "refresh": {
+      "title": "Externe site vernieuwen"
+    },
+    "site": "Site",
+    "sites": {
+      "title": "Externe sites"
+    }
+  },
+  "card": {
+    "title": "Externe sites",
+    "loading": "Laden",
+    "empty": "Nog geen externe sites.",
+    "sites": "{{reachable}} van de {{total}} sites zijn bereikbaar",
+    "hosts": "{{online}} hosts online, {{offline}} offline"
   }
 }

@@ -238,6 +238,31 @@
   "settings": {
     "host": {
       "site": "Uzak site"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Bir siteye ulaşılamadığında uyarı ver",
+        "description": "Uzak bir site yanıt vermeyi bıraktığında ve tekrar bağlandığında uyarı gönder."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Uzak siteleri listele"
+    },
+    "refresh": {
+      "title": "Uzak siteyi yenile"
+    },
+    "site": "Site",
+    "sites": {
+      "title": "Uzak siteler"
+    }
+  },
+  "card": {
+    "title": "Uzak siteler",
+    "loading": "Yükleniyor",
+    "empty": "Henüz uzak site yok.",
+    "sites": "{{total}} sitenin {{reachable}}'üne ulaşılabiliyor",
+    "hosts": "{{online}} sunucu çevrimiçi, {{offline}} çevrimdışı"
   }
 }

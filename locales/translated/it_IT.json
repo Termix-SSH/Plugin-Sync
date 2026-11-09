@@ -244,6 +244,31 @@
   "settings": {
     "host": {
       "site": "Sito remoto"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Avvisa quando un sito non è raggiungibile",
+        "description": "Invia un avviso quando un sito remoto smette di rispondere e quando torna online."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Elenca i siti remoti"
+    },
+    "refresh": {
+      "title": "Aggiorna il sito remoto"
+    },
+    "site": "Sito",
+    "sites": {
+      "title": "Siti remoti"
+    }
+  },
+  "card": {
+    "title": "Siti remoti",
+    "loading": "Caricamento",
+    "empty": "Nessun sito remoto ancora.",
+    "sites": "{{reachable}} di {{total}} siti raggiungibili",
+    "hosts": "{{online}} host online, {{offline}} offline"
   }
 }

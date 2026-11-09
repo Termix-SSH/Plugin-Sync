@@ -250,6 +250,31 @@
   "settings": {
     "host": {
       "site": "Vzdialené miesto"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Upozornenie, keď nie je možné sa pripojiť na vzdialené miesto",
+        "description": "Poslať upozornenie, keď vzdialené miesto prestane odpovedať a keď sa znova stane dostupným."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Zoznam vzdialených miest"
+    },
+    "refresh": {
+      "title": "Obnoviť vzdialené miesto"
+    },
+    "site": "Miesto",
+    "sites": {
+      "title": "Vzdialené miesta"
+    }
+  },
+  "card": {
+    "title": "Vzdialené miesta",
+    "loading": "Načítava sa",
+    "empty": "Zatiaľ žiadne vzdialené miesta.",
+    "sites": "{{reachable}} z {{total}} miest je dostupných",
+    "hosts": "{{online}} hostov je online, {{offline}} offline"
   }
 }

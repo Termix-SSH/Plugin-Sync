@@ -244,6 +244,31 @@
   "settings": {
     "host": {
       "site": "Site remote"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Alertează când un site nu poate fi accesat",
+        "description": "Trimite o alertă când un site remote încetează să răspundă și când revine online."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Listează site-urile remote"
+    },
+    "refresh": {
+      "title": "Reîmprospătează site-ul remote"
+    },
+    "site": "Site",
+    "sites": {
+      "title": "Site-uri remote"
+    }
+  },
+  "card": {
+    "title": "Site-uri remote",
+    "loading": "Se încarcă",
+    "empty": "Încă nu există site-uri remote.",
+    "sites": "{{reachable}} din {{total}} site-uri accesibile",
+    "hosts": "{{online}} host-uri online, {{offline}} offline"
   }
 }

@@ -250,6 +250,31 @@
   "settings": {
     "host": {
       "site": "Vzdálený web"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Upozornit, když není možné se připojit k webu",
+        "description": "Poslat upozornění, když vzdálený web přestane odpovídat a když se znovu stane dostupným."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Seznam vzdálených webů"
+    },
+    "refresh": {
+      "title": "Obnovit vzdálený web"
+    },
+    "site": "Web",
+    "sites": {
+      "title": "Vzdálené weby"
+    }
+  },
+  "card": {
+    "title": "Vzdálené weby",
+    "loading": "Načítání",
+    "empty": "Zatím žádné vzdálené weby.",
+    "sites": "{{reachable}} z {{total}} webů dostupných",
+    "hosts": "{{online}} hostů online, {{offline}} offline"
   }
 }

@@ -5,6 +5,7 @@ import {
   notifySyncChanged,
   invalidateServerStatusCache,
   useConfirm,
+  LoadingState,
 } from "@termix-ssh/plugin-sdk/ui";
 import { useSyncStatus } from "./use-sync-status";
 import { refreshSyncStatus, setSyncStatus } from "./status";
@@ -190,11 +191,7 @@ export function SyncPanel() {
   }, [status?.entities]);
 
   if (!status) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="size-5 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <LoadingState />;
   }
 
   const linkDialog = (

@@ -238,6 +238,31 @@
   "settings": {
     "host": {
       "site": "Remote site"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Alert when a site can not be reached",
+        "description": "Send an alert when a remote site stops answering and when it comes back."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "List remote sites"
+    },
+    "refresh": {
+      "title": "Refresh remote site"
+    },
+    "site": "Site",
+    "sites": {
+      "title": "Remote sites"
+    }
+  },
+  "card": {
+    "title": "Remote sites",
+    "loading": "Loading",
+    "empty": "No remote sites yet.",
+    "sites": "{{reachable}} of {{total}} sites reachable",
+    "hosts": "{{online}} hosts online, {{offline}} offline"
   }
 }

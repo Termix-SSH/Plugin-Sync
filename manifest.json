@@ -1,7 +1,7 @@
 {
   "id": "sync",
   "name": "Sync",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Sync the desktop app with one or more servers, and manage other Termix servers as remote sites from a master.",
   "author": {
     "name": "Termix"
@@ -22,7 +22,7 @@
   ],
   "env": [],
   "engine": {
-    "termix": ">=26.10.3",
+    "termix": ">=26.11.1-0",
     "api": "^1.10"
   },
   "capabilities": [
@@ -37,7 +37,9 @@
     "network:serve",
     "kv:own",
     "secrets:own",
-    "ui:surface"
+    "ui:surface",
+    "operations:provide",
+    "notify:send"
   ],
   "contributes": {
     "permissions": [
@@ -79,6 +81,13 @@
           "key": "sites",
           "type": "custom",
           "component": "sites"
+        },
+        {
+          "key": "alertOnSiteErrors",
+          "type": "boolean",
+          "labelKey": "settings.admin.alertOnSiteErrors.label",
+          "descriptionKey": "settings.admin.alertOnSiteErrors.description",
+          "default": true
         }
       ]
     },
@@ -86,6 +95,64 @@
       {
         "id": "sync",
         "titleKey": "sync.navTitle",
+        "icon": "Cloud"
+      }
+    ],
+    "operations": {
+      "actions": [
+        {
+          "id": "sync.list-sites",
+          "titleKey": "operations.list.title",
+          "icon": "Network",
+          "scope": "server",
+          "risk": "read",
+          "permission": "sites",
+          "surfaces": {
+            "assistant": true,
+            "mcp": true,
+            "palette": false
+          }
+        },
+        {
+          "id": "sync.refresh-site",
+          "titleKey": "operations.refresh.title",
+          "icon": "RefreshCw",
+          "scope": "server",
+          "risk": "change",
+          "permission": "sites",
+          "dryRun": "describe",
+          "idempotent": true,
+          "exclusive": true,
+          "inputs": [
+            {
+              "key": "site",
+              "type": "string",
+              "labelKey": "operations.site",
+              "required": true,
+              "optionsFrom": "sync.list-sites"
+            }
+          ],
+          "surfaces": {
+            "assistant": true,
+            "mcp": true
+          }
+        }
+      ],
+      "signals": [
+        {
+          "id": "sync.sites",
+          "titleKey": "operations.sites.title",
+          "read": "sync.list-sites",
+          "scope": "server",
+          "kind": "status",
+          "refreshSec": 300
+        }
+      ]
+    },
+    "dashboardCards": [
+      {
+        "id": "sync-sites",
+        "titleKey": "card.title",
         "icon": "Cloud"
       }
     ]

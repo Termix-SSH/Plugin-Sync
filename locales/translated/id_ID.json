@@ -230,6 +230,31 @@
   "settings": {
     "host": {
       "site": "Situs jarak jauh"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Peringatkan ketika situs tidak dapat diakses",
+        "description": "Kirim peringatan ketika situs remote berhenti merespons dan ketika kembali online."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Daftar situs remote"
+    },
+    "refresh": {
+      "title": "Muat ulang situs remote"
+    },
+    "site": "Situs",
+    "sites": {
+      "title": "Situs remote"
+    }
+  },
+  "card": {
+    "title": "Situs remote",
+    "loading": "Memuat",
+    "empty": "Belum ada situs remote.",
+    "sites": "{{reachable}} dari {{total}} situs dapat diakses",
+    "hosts": "{{online}} host online, {{offline}} offline"
   }
 }

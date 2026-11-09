@@ -238,6 +238,31 @@
   "settings": {
     "host": {
       "site": "Afgeleë webwerf"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Waarskuif wanneer 'n webwerf nie bereikbaar is nie",
+        "description": "Stuur 'n waarskuwing wanneer 'n afgeleë webwerf ophou antwoord en wanneer dit weer beskikbaar is."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Lys afgeleë webwerwe"
+    },
+    "refresh": {
+      "title": "Verfris afgeleë webwerf"
+    },
+    "site": "Webwerf",
+    "sites": {
+      "title": "Afgeleë webwerwe"
+    }
+  },
+  "card": {
+    "title": "Afgeleë webwerwe",
+    "loading": "Laai tans",
+    "empty": "Nog geen afgeleë webwerwe nie.",
+    "sites": "{{reachable}} van {{total}} webwerwe bereikbaar",
+    "hosts": "{{online}} gasheerbedieners aanlyn, {{offline}} aflyn"
   }
 }

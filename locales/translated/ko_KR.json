@@ -232,6 +232,31 @@
   "settings": {
     "host": {
       "site": "원격 사이트"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "사이트에 연결할 수 없을 때 알림",
+        "description": "원격 사이트가 응답을 멈추거나 다시 응답할 때 알림을 보냅니다."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "원격 사이트 목록"
+    },
+    "refresh": {
+      "title": "원격 사이트 새로고침"
+    },
+    "site": "사이트",
+    "sites": {
+      "title": "원격 사이트"
+    }
+  },
+  "card": {
+    "title": "원격 사이트",
+    "loading": "로딩 중",
+    "empty": "아직 원격 사이트가 없습니다.",
+    "sites": "{{total}}개 중 {{reachable}}개 사이트 연결 가능",
+    "hosts": "{{online}}개 호스트 온라인, {{offline}}개 오프라인"
   }
 }

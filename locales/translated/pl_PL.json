@@ -250,6 +250,31 @@
   "settings": {
     "host": {
       "site": "Zdalna witryna"
+    },
+    "admin": {
+      "alertOnSiteErrors": {
+        "label": "Powiadom, gdy strona jest nieosiągalna",
+        "description": "Wyślij powiadomienie, gdy zdalna strona przestanie odpowiadać oraz gdy wróci do działania."
+      }
     }
+  },
+  "operations": {
+    "list": {
+      "title": "Lista zdalnych stron"
+    },
+    "refresh": {
+      "title": "Odśwież zdalną stronę"
+    },
+    "site": "Strona",
+    "sites": {
+      "title": "Zdalne strony"
+    }
+  },
+  "card": {
+    "title": "Zdalne strony",
+    "loading": "Ładowanie",
+    "empty": "Brak jeszcze żadnych zdalnych stron.",
+    "sites": "{{reachable}} z {{total}} stron osiągalnych",
+    "hosts": "{{online}} hostów online, {{offline}} offline"
   }
 }
