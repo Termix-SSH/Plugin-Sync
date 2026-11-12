@@ -21,7 +21,7 @@
     "@testing-library/react": "^16.3.3",
     "@types/better-sqlite3": "^9.6.0",
     "@types/express": "^5.0.6",
-    "@types/node": "^26.2.0",
+    "@types/node": "^26.6.6",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@types/ws": "^8.18.1",
@@ -30,7 +30,7 @@
     "i18next": "^26.4.2",
     "jsdom": "^30.0.1",
     "lint-staged": "^17.2.0",
-    "prettier": "3.9.9",
+    "prettier": "3.9.10",
     "react-i18next": "^17.0.16",
     "sonner": "^2.0.8",
     "typescript": "~6.0.3",
@@ -53,8 +53,8 @@
   "dependencies": {
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/xterm": "^6.0.0",
-    "lucide-react": "^1.33.0",
-    "ws": "^8.21.3"
+    "lucide-react": "^1.70.0",
+    "ws": "^8.22.2"
   },
   "overrides": {
     "glob@12": "^14.0.4",
