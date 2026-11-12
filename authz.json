@@ -1,0 +1,259 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Termix-SSH/Termix/main/scripts/authz/authz.schema.json",
+  "seed": [],
+  "routes": {
+    "GET /plugin-api/sync/accounts": {
+      "access": "user",
+      "allowed": "any",
+      "note": "Desktop app only; a server answers 404"
+    },
+    "POST /plugin-api/sync/accounts": {
+      "access": "user"
+    },
+    "DELETE /plugin-api/sync/accounts/:id": {
+      "access": "user",
+      "resource": {
+        "kind": "own",
+        "fixture": "sync.accounts"
+      },
+      "params": {
+        "id": "=authz-none"
+      },
+      "destructive": true,
+      "allowed": "any",
+      "note": "No accounts in the test data (needs a linked desktop or a second server); only session, permission and unknown id refusals are checked"
+    },
+    "POST /plugin-api/sync/accounts/switch": {
+      "access": "user"
+    },
+    "POST /plugin-api/sync/link/complete": {
+      "access": "user",
+      "unlisted": "Not served on a server (desktop app only)",
+      "skip": "desktop only"
+    },
+    "GET /plugin-api/sync/link/conflicts": {
+      "access": "user",
+      "unlisted": "Not served on a server (desktop app only)",
+      "skip": "desktop only"
+    },
+    "POST /plugin-api/sync/link/conflicts": {
+      "access": "user",
+      "unlisted": "Not served on a server (desktop app only)",
+      "skip": "desktop only"
+    },
+    "POST /plugin-api/sync/link/conflicts/:id": {
+      "access": "user",
+      "resource": {
+        "kind": "own",
+        "fixture": "sync.conflicts"
+      },
+      "params": {
+        "id": "=authz-none"
+      },
+      "unlisted": "Not served on a server (desktop app only)",
+      "skip": "desktop only",
+      "allowed": "any",
+      "note": "No conflicts in the test data (needs a linked desktop or a second server); only session, permission and unknown id refusals are checked"
+    },
+    "GET /plugin-api/sync/link/errors": {
+      "access": "user",
+      "unlisted": "Not served on a server (desktop app only)",
+      "skip": "desktop only"
+    },
+    "POST /plugin-api/sync/link/errors/retry": {
+      "access": "user",
+      "unlisted": "Not served on a server (desktop app only)",
+      "skip": "desktop only"
+    },
+    "GET /plugin-api/sync/link/preview": {
+      "access": "user",
+      "unlisted": "Not served on a server (desktop app only)",
+      "skip": "desktop only"
+    },
+    "POST /plugin-api/sync/link/probe": {
+      "access": "user",
+      "unlisted": "Not served on a server (desktop app only)",
+      "skip": "desktop only"
+    },
+    "POST /plugin-api/sync/link/relogin": {
+      "access": "user",
+      "unlisted": "Not served on a server (desktop app only)",
+      "skip": "desktop only"
+    },
+    "GET /plugin-api/sync/link/session": {
+      "access": "user",
+      "unlisted": "Not served on a server (desktop app only)",
+      "skip": "desktop only"
+    },
+    "PUT /plugin-api/sync/link/settings": {
+      "access": "user",
+      "unlisted": "Not served on a server (desktop app only)",
+      "skip": "desktop only"
+    },
+    "GET /plugin-api/sync/link/status": {
+      "access": "user",
+      "unlisted": "Not served on a server (desktop app only)",
+      "skip": "desktop only"
+    },
+    "POST /plugin-api/sync/link/sync": {
+      "access": "user",
+      "unlisted": "Not served on a server (desktop app only)",
+      "skip": "desktop only"
+    },
+    "POST /plugin-api/sync/link/unlink": {
+      "access": "user",
+      "destructive": true,
+      "unlisted": "Not served on a server (desktop app only)",
+      "skip": "desktop only"
+    },
+    "GET /plugin-api/sync/overview": {
+      "access": "user",
+      "permission": "sync.sites"
+    },
+    "GET /plugin-api/sync/roles": {
+      "access": "user",
+      "permission": "sync.sites"
+    },
+    "GET /plugin-api/sync/sites": {
+      "access": "user",
+      "permission": "sync.sites"
+    },
+    "POST /plugin-api/sync/sites": {
+      "access": "user"
+    },
+    "DELETE /plugin-api/sync/sites/:id": {
+      "access": "user",
+      "resource": {
+        "kind": "own",
+        "fixture": "sync.sites"
+      },
+      "params": {
+        "id": "=authz-none"
+      },
+      "destructive": true,
+      "allowed": "any",
+      "note": "No sites in the test data (needs a linked desktop or a second server); only session, permission and unknown id refusals are checked"
+    },
+    "PUT /plugin-api/sync/sites/:id": {
+      "access": "user",
+      "resource": {
+        "kind": "own",
+        "fixture": "sync.sites"
+      },
+      "params": {
+        "id": "=authz-none"
+      },
+      "allowed": "any",
+      "note": "No sites in the test data (needs a linked desktop or a second server); only session, permission and unknown id refusals are checked"
+    },
+    "POST /plugin-api/sync/sites/:id/refresh": {
+      "access": "user",
+      "resource": {
+        "kind": "own",
+        "fixture": "sync.sites"
+      },
+      "params": {
+        "id": "=authz-none"
+      },
+      "allowed": "any",
+      "note": "No sites in the test data (needs a linked desktop or a second server); only session, permission and unknown id refusals are checked"
+    },
+    "GET /plugin-api/sync/web/accounts": {
+      "access": "user"
+    },
+    "DELETE /plugin-api/sync/web/accounts/:userId": {
+      "access": "user",
+      "resource": {
+        "kind": "own",
+        "fixture": "sync.accounts"
+      },
+      "params": {
+        "userId": "=authz-none"
+      },
+      "destructive": true,
+      "allowed": "any",
+      "note": "Works only inside the caller own browser account ring",
+      "filtered": true
+    },
+    "POST /plugin-api/sync/web/accounts/attach": {
+      "access": "user"
+    },
+    "POST /plugin-api/sync/web/accounts/begin": {
+      "access": "user"
+    },
+    "POST /plugin-api/sync/web/accounts/switch": {
+      "access": "user"
+    },
+    "GET /sync/v2/changes": {
+      "access": "user",
+      "unlisted": "Served at /sync through core's forwarder"
+    },
+    "GET /sync/v2/devices": {
+      "access": "user",
+      "unlisted": "Served at /sync through core's forwarder"
+    },
+    "GET /sync/v2/events": {
+      "access": "user",
+      "unlisted": "Served at /sync through core's forwarder"
+    },
+    "GET /sync/v2/host-status": {
+      "access": "user",
+      "unlisted": "Served at /sync through core's forwarder"
+    },
+    "GET /sync/v2/hosts/:syncId": {
+      "access": "user",
+      "resource": {
+        "kind": "own",
+        "fixture": "sync.hosts"
+      },
+      "params": {
+        "syncId": "=authz-none"
+      },
+      "unlisted": "Served at /sync through core's forwarder",
+      "allowed": "any",
+      "note": "No hosts in the test data (needs a linked desktop or a second server); only session, permission and unknown id refusals are checked"
+    },
+    "POST /sync/v2/ids": {
+      "access": "user",
+      "unlisted": "Served at /sync through core's forwarder"
+    },
+    "GET /sync/v2/info": {
+      "access": "public",
+      "unlisted": "Served at /sync through core's forwarder"
+    },
+    "POST /sync/v2/link": {
+      "access": "user",
+      "unlisted": "Served at /sync through core's forwarder"
+    },
+    "GET /sync/v2/plugins": {
+      "access": "user",
+      "unlisted": "Served at /sync through core's forwarder"
+    },
+    "GET /sync/v2/plugins/:id/package": {
+      "access": "user",
+      "resource": {
+        "kind": "own",
+        "fixture": "sync.plugins"
+      },
+      "params": {
+        "id": "=authz-none"
+      },
+      "unlisted": "Served at /sync through core's forwarder",
+      "allowed": "any",
+      "note": "No plugins in the test data (needs a linked desktop or a second server); only session, permission and unknown id refusals are checked"
+    },
+    "POST /sync/v2/push": {
+      "access": "user",
+      "unlisted": "Served at /sync through core's forwarder"
+    },
+    "POST /sync/v2/session/refresh": {
+      "access": "user",
+      "unlisted": "Served at /sync through core's forwarder"
+    },
+    "POST /sync/v2/unlink": {
+      "access": "user",
+      "destructive": true,
+      "unlisted": "Served at /sync through core's forwarder"
+    }
+  }
+}
