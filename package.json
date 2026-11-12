@@ -55,5 +55,9 @@
     "@xterm/xterm": "^6.0.0",
     "lucide-react": "^1.33.0",
     "ws": "^8.21.3"
+  },
+  "overrides": {
+    "glob@12": "^14.0.4",
+    "minimatch@10": "^11.0.5"
   }
 }
