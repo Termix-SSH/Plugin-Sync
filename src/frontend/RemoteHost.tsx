@@ -1,4 +1,8 @@
-import type { PluginHostRecord } from "@termix-ssh/plugin-sdk/frontend";
+import type {
+  DataResult,
+  DataTone,
+  PluginHostRecord,
+} from "@termix-ssh/plugin-sdk/frontend";
 import { useTranslation } from "@termix-ssh/plugin-sdk/frontend";
 
 interface SiteSettings {
@@ -27,23 +31,23 @@ export function remoteOf(
   };
 }
 
-const COLOR: Record<string, string> = {
-  online: "bg-green-500",
-  reachable: "bg-green-500",
-  offline: "bg-red-500",
+const TONE: Record<string, DataTone> = {
+  online: "good",
+  reachable: "good",
+  offline: "bad",
 };
 
-/** The dot on a mirrored host's row: the status the remote site reports. */
-export function RemoteStatusDot({ host }: { host: PluginHostRecord }) {
+/**
+ * The dot on a mirrored host's row: the status the remote site reports. A
+ * value the shell draws, so it works from a frame too.
+ */
+export function useRemoteStatusValue(host: PluginHostRecord): DataResult {
   const { t } = useTranslation();
   const remote = remoteOf(host, "sync");
   if (!remote) return null;
-  return (
-    <span
-      title={t("sites.remoteStatus", { status: remote.status })}
-      className={`inline-block size-2 shrink-0 rounded-full ${
-        COLOR[remote.status] ?? "bg-muted-foreground/40"
-      }`}
-    />
-  );
+  return {
+    shape: "dot",
+    tone: TONE[remote.status] ?? "muted",
+    label: t("sites.remoteStatus", { status: remote.status }),
+  };
 }

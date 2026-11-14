@@ -6,6 +6,7 @@
 
 - Runs in its own process on Termix 26.11.2 and later, with no access to the server beyond what Termix allows it
 - The web account switcher starts with an empty list once after this update. Sign in to your other accounts again to add them back
+- The status dot on hosts mirrored from another site is a plain value the host list draws (needs Termix 26.11.2)
 
 ## 1.2.0
 

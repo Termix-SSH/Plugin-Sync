@@ -4,7 +4,7 @@ import { AccountSwitcher } from "./AccountSwitcher";
 import { SitesCard } from "./SitesCard";
 import { SitesSetting } from "./SitesTab";
 import { setApp } from "./app";
-import { RemoteStatusDot, remoteOf } from "./RemoteHost";
+import { remoteOf, useRemoteStatusValue } from "./RemoteHost";
 import { SyncPanel } from "./sync/SyncPanel";
 import { DesktopSyncStep } from "./sync/OnboardingStep";
 import { subscribeSyncStatus } from "./sync/status";
@@ -66,7 +66,7 @@ export function activate(app: TermixApp): void {
   app.registerHostStatusIndicator({
     id: "site-status",
     when: (host) => remoteOf(host, "sync") !== null,
-    component: RemoteStatusDot,
+    useValue: useRemoteStatusValue,
   });
 }
 
