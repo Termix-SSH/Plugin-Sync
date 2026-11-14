@@ -67,6 +67,7 @@ export async function activate(ctx: PluginContext) {
       return name ? `Synced from ${name}. Change it on that site.` : null;
     },
     allowManualCreate: () => true,
+    lockedHosts: () => siteStore.mirroredHostIds(),
   });
   await siteStore.loadMirrored();
   if (host.embedded) {
