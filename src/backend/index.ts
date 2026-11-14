@@ -50,9 +50,11 @@ export async function activate(ctx: PluginContext) {
   const router = express.Router();
   router.use(createServerRouter(host, deviceStore, log));
   // The plugin's own screens talk to the plugin API, the protocol stays on /sync.
+  // Routes go on ctx's router itself: in a plugin process a mounted sub-router
+  // would serve nothing.
   const api = ctx.http.router<express.Router>();
-  api.use(createAccountsRouter({ ctx, host, manager, webTable, log }));
-  api.use(createSitesRouter(ctx, host, siteStore, log));
+  createAccountsRouter({ ctx, host, manager, webTable, log }, api);
+  createSitesRouter(ctx, host, siteStore, log, api);
   registerSiteTransport(ctx, siteStore);
   registerOperations(ctx, siteStore);
   registerOriginTransport(ctx, host);
@@ -70,9 +72,8 @@ export async function activate(ctx: PluginContext) {
   if (host.embedded) {
     // The same routes answer on /sync for core and on the plugin API for the
     // plugin's own screens.
-    const client = createClientRouter(host, manager, deviceId, log);
-    router.use(client);
-    api.use(client);
+    router.use(createClientRouter(host, manager, deviceId, log));
+    createClientRouter(host, manager, deviceId, log, api);
   }
 
   ctx.sync.provide({
@@ -82,7 +83,9 @@ export async function activate(ctx: PluginContext) {
   });
 
   if (!host.embedded) {
-    ctx.schedule.every(SITE_REFRESH_MS, () => siteStore.refreshAll());
+    ctx.schedule.every(SITE_REFRESH_MS, () => siteStore.refreshAll(), {
+      id: "sites",
+    });
   }
 
   if (host.embedded) {

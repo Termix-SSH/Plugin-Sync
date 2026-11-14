@@ -39,8 +39,8 @@ export function createSitesRouter(
   host: PluginSyncHost,
   sites: Sites,
   log: { error: (message: string, meta?: unknown) => void },
+  router: express.Router = express.Router(),
 ): express.Router {
-  const router = express.Router();
   router.use("/sites", ctx.rbac.require("sites") as unknown as RequestHandler);
   router.use(
     "/overview",
@@ -122,7 +122,7 @@ export function createSitesRouter(
    *         description: That site is already added.
    */
   router.post("/sites", async (req: Request, res: Response) => {
-    const baseUrl = normalizeBaseUrl(host, req.body?.baseUrl);
+    const baseUrl = await normalizeBaseUrl(host, req.body?.baseUrl);
     const apiKey = text(req.body?.apiKey, 500);
     const name = text(req.body?.name, 100);
     if (!baseUrl || !apiKey || !name) {

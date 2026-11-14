@@ -1,6 +1,3 @@
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 import { WebSocketServer } from "ws";
@@ -61,19 +58,19 @@ describe("origin transport", () => {
     });
     await transport.refresh();
 
-    expect(transport.claims(4)).toBe(false);
-    expect(transport.claims(4, host)).toBe(false);
-    expect(transport.claims(4, { ...host, connectionOrigin: "remote" })).toBe(
-      true,
-    );
+    expect(await transport.claims(4)).toBe(false);
+    expect(await transport.claims(4, host)).toBe(false);
+    expect(
+      await transport.claims(4, { ...host, connectionOrigin: "remote" }),
+    ).toBe(true);
     remoteDefault = true;
-    expect(transport.claims(4, host)).toBe(true);
-    expect(transport.claims(4, { ...host, connectionOrigin: "local" })).toBe(
-      false,
-    );
-    expect(transport.claims(4, { ...host, localOnly: true })).toBe(false);
-    expect(transport.claims(4, { ...host, syncId: null })).toBe(false);
-    expect(transport.claims(4, { ...host, userId: "someone-else" })).toBe(
+    expect(await transport.claims(4, host)).toBe(true);
+    expect(
+      await transport.claims(4, { ...host, connectionOrigin: "local" }),
+    ).toBe(false);
+    expect(await transport.claims(4, { ...host, localOnly: true })).toBe(false);
+    expect(await transport.claims(4, { ...host, syncId: null })).toBe(false);
+    expect(await transport.claims(4, { ...host, userId: "someone-else" })).toBe(
       false,
     );
   });
@@ -84,7 +81,7 @@ describe("origin transport", () => {
       defaultRemote: () => true,
     });
     await transport.refresh();
-    expect(transport.claims(4, host)).toBe(false);
+    expect(await transport.claims(4, host)).toBe(false);
   });
 
   it("opens the relay with the link's token and headers", async () => {
@@ -130,28 +127,31 @@ describe("origin transport", () => {
 });
 
 describe("desktop default origin", () => {
-  it("reads the settings file and caches it briefly", () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "sync-origin-"));
-    const file = path.join(dir, "desktop-settings.json");
-    fs.writeFileSync(
-      file,
-      JSON.stringify({ defaultConnectionOrigin: "remote" }),
-    );
+  it("asks Termix and caches the answer briefly", async () => {
+    let origin: "local" | "remote" = "remote";
+    let asked = 0;
     let time = 0;
-    const read = createDefaultOriginReader(file, () => time);
-    expect(read()).toBe(true);
-    fs.writeFileSync(
-      file,
-      JSON.stringify({ defaultConnectionOrigin: "local" }),
+    const read = createDefaultOriginReader(
+      async () => {
+        asked++;
+        return origin;
+      },
+      () => time,
     );
-    expect(read()).toBe(true);
+    expect(await read()).toBe(true);
+    origin = "local";
+    expect(await read()).toBe(true);
     time = 10_000;
-    expect(read()).toBe(false);
-    fs.rmSync(dir, { recursive: true, force: true });
+    expect(await read()).toBe(false);
+    expect(asked).toBe(2);
   });
 
-  it("is local without a settings file", () => {
-    expect(createDefaultOriginReader(null)()).toBe(false);
-    expect(createDefaultOriginReader("/nope/settings.json")()).toBe(false);
+  it("is local on an older Termix or when the read fails", async () => {
+    expect(await createDefaultOriginReader(undefined)()).toBe(false);
+    expect(
+      await createDefaultOriginReader(async () => {
+        throw new Error("gone");
+      })(),
+    ).toBe(false);
   });
 });

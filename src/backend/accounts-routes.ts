@@ -16,7 +16,8 @@ import type {
 } from "@termix-ssh/plugin-sdk/backend";
 import type { EngineManager } from "./engines.js";
 
-const RING_COOKIE = "termix_accounts";
+// Plugin cookies start with tmxp_<id>_, the only ones a plugin process gets.
+const RING_COOKIE = "tmxp_sync_accounts";
 const RING_DAYS = 365;
 
 interface AuthedRequest extends Request {
@@ -41,14 +42,10 @@ export interface AccountsDeps {
   log: { error: (message: string, meta?: unknown) => void };
 }
 
-export function createAccountsRouter({
-  ctx,
-  host,
-  manager,
-  webTable,
-  log,
-}: AccountsDeps): express.Router {
-  const router = express.Router();
+export function createAccountsRouter(
+  { ctx, host, manager, webTable, log }: AccountsDeps,
+  router: express.Router = express.Router(),
+): express.Router {
   const authenticate = host.sessions.middleware() as express.RequestHandler;
   const desktopOnly = host.sessions.desktopOnly() as express.RequestHandler;
 

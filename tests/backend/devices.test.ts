@@ -20,6 +20,7 @@ beforeEach(async () => {
     "INSERT INTO users (id, username) VALUES ('u1', 'u1'), ('u2', 'u2')",
   );
   const mock = createMockCtx({
+    sandbox: true,
     pluginId: "sync",
     capabilities: ["db:own"],
     db: db.database,

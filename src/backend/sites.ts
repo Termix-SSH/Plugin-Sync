@@ -77,11 +77,13 @@ export class SiteError extends Error {
   }
 }
 
-export function normalizeBaseUrl(
+export async function normalizeBaseUrl(
   host: PluginSyncHost,
   input: unknown,
-): string | null {
-  return typeof input === "string" ? host.http.normalizeServerUrl(input) : null;
+): Promise<string | null> {
+  return typeof input === "string"
+    ? await host.http.normalizeServerUrl(input)
+    : null;
 }
 
 function parseTags(tags: RemoteHost["tags"]): string[] {

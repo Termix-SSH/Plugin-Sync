@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0
+
+### Changed
+
+- Runs in its own process on Termix 26.11.2 and later, with no access to the server beyond what Termix allows it
+- The web account switcher starts with an empty list once after this update. Sign in to your other accounts again to add them back
+
 ## 1.2.0
 
 ### Added

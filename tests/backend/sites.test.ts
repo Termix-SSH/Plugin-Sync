@@ -119,6 +119,7 @@ beforeEach(async () => {
   db = await createTestDb(path.resolve(import.meta.dirname, "../.."));
   db.sqlite.exec("INSERT INTO users (id, username) VALUES ('admin', 'admin')");
   mock = createMockCtx({
+    sandbox: true,
     pluginId: "sync",
     actor: "admin",
     capabilities: [
