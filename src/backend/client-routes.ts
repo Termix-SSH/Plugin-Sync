@@ -69,17 +69,19 @@ export function createClientRouter(
     error: (message: string, meta?: unknown) => void;
     warn: (message: string, meta?: unknown) => void;
   },
+  router: express.Router = express.Router(),
 ): express.Router {
-  const router = express.Router();
   const guard = [
     host.sessions.desktopOnly() as express.RequestHandler,
     host.sessions.middleware() as express.RequestHandler,
   ];
 
-  function readTarget(body: Record<string, unknown>): SyncRemoteTarget | null {
+  async function readTarget(
+    body: Record<string, unknown>,
+  ): Promise<SyncRemoteTarget | null> {
     const serverUrl =
       typeof body.serverUrl === "string"
-        ? host.http.normalizeServerUrl(body.serverUrl)
+        ? await host.http.normalizeServerUrl(body.serverUrl)
         : null;
     if (!serverUrl) return null;
     return {
@@ -121,8 +123,8 @@ export function createClientRouter(
     engine: SyncEngine,
   ) {
     await host.entities.ensureCore();
-    const names = host.plugins.localNames();
-    for (const plugin of host.plugins.lastRemote()) {
+    const names = await host.plugins.localNames();
+    for (const plugin of await host.plugins.lastRemote()) {
       if (!names.has(plugin.id)) names.set(plugin.id, plugin.name);
     }
     const serverTypes = engine.state.serverTypes;
@@ -228,7 +230,7 @@ export function createClientRouter(
    *         description: The server's name and version, or the problem found.
    */
   router.post("/link/probe", ...guard, async (req: Request, res: Response) => {
-    const target = readTarget(req.body ?? {});
+    const target = await readTarget(req.body ?? {});
     if (!target) return res.json({ ok: false, problem: "invalid_url" });
     // A Termix server with the Sync plugin off answers 404 on /sync. Its login
     // methods route still answers, which tells it apart from another site.
@@ -327,7 +329,7 @@ export function createClientRouter(
     async (req: Request, res: Response) => {
       const userId = userOf(req);
       const body = req.body ?? {};
-      const target = readTarget(body);
+      const target = await readTarget(body);
       const token = typeof body.token === "string" ? body.token : "";
       const mode = body.mode === "replace" ? "replace" : "merge";
       if (!target || !token) {

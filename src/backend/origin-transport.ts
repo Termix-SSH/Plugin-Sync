@@ -10,8 +10,6 @@
  * origin. Older cores do not, and then nothing is claimed.
  */
 
-import fs from "node:fs";
-import path from "node:path";
 import type { Duplex } from "node:stream";
 import WebSocket, { createWebSocketStream } from "ws";
 import type {
@@ -42,21 +40,18 @@ export function originRelayUrl(serverUrl: string, syncId: string): string {
   return url.toString();
 }
 
-/** Reads the desktop wide default from the app's settings file. */
+/** The desktop wide default, read through Termix and kept for a few seconds. */
 export function createDefaultOriginReader(
-  settingsFile: string | null,
+  read: (() => Promise<"local" | "remote">) | undefined,
   now: () => number = Date.now,
-): () => boolean {
+): () => Promise<boolean> {
   let cached: { at: number; remote: boolean } | null = null;
-  return () => {
-    if (!settingsFile) return false;
+  return async () => {
+    if (!read) return false;
     if (cached && now() - cached.at < SETTINGS_CACHE_MS) return cached.remote;
     let remote = false;
     try {
-      const parsed = JSON.parse(fs.readFileSync(settingsFile, "utf8")) as {
-        defaultConnectionOrigin?: unknown;
-      };
-      remote = parsed.defaultConnectionOrigin === "remote";
+      remote = (await read()) === "remote";
     } catch {
       remote = false;
     }
@@ -67,7 +62,7 @@ export function createDefaultOriginReader(
 
 export function createOriginTransport(options: {
   links: () => Promise<SyncLinkInfo[]>;
-  defaultRemote: () => boolean;
+  defaultRemote: () => boolean | Promise<boolean>;
 }) {
   const linked = new Map<string, SyncLinkInfo>();
 
@@ -82,11 +77,13 @@ export function createOriginTransport(options: {
     }
   }
 
-  function claims(_hostId: number, host?: OriginHost): boolean {
+  async function claims(_hostId: number, host?: OriginHost): Promise<boolean> {
     if (!host?.syncId || !host.userId || host.localOnly) return false;
     if (!linked.has(host.userId)) return false;
     if (host.connectionOrigin === "local") return false;
-    return host.connectionOrigin === "remote" || options.defaultRemote();
+    return (
+      host.connectionOrigin === "remote" || (await options.defaultRemote())
+    );
   }
 
   async function open(host: OriginHost): Promise<Duplex> {
@@ -134,15 +131,14 @@ export function registerOriginTransport(
   host: PluginSyncHost,
 ): void {
   if (!host.embedded) return;
-  const userData = process.env.ELECTRON_USER_DATA;
   const transport = createOriginTransport({
     links: () => host.links.list(),
-    defaultRemote: createDefaultOriginReader(
-      userData ? path.join(userData, "desktop-settings.json") : null,
-    ),
+    defaultRemote: createDefaultOriginReader(host.desktop.connectionOrigin),
   });
   void transport.refresh();
-  ctx.schedule.every(LINKS_REFRESH_MS, () => transport.refresh());
+  ctx.schedule.every(LINKS_REFRESH_MS, () => transport.refresh(), {
+    id: "origin-links",
+  });
   ctx.ssh.transports.provide({
     claims: transport.claims,
     open: transport.open,

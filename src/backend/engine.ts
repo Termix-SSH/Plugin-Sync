@@ -183,7 +183,7 @@ export class SyncEngine {
     }
   }
 
-  private sortChanges(changes: RemoteChange[]): RemoteChange[] {
+  private async sortChanges(changes: RemoteChange[]): Promise<RemoteChange[]> {
     const { entities, replica } = this.host;
     const byType = new Map<string, RemoteChange[]>();
     for (const change of changes) {
@@ -206,7 +206,7 @@ export class SyncEngine {
       const gone = [...latest.values()].filter((change) => change.deleted);
       if (entity) {
         const bySyncId = new Map(live.map((change) => [change.syncId, change]));
-        const ordered = replica.orderSelfReferences(
+        const ordered = await replica.orderSelfReferences(
           type,
           live.map((change) => ({
             ...(change.row ?? {}),
@@ -355,7 +355,7 @@ export class SyncEngine {
         if (record.entityType !== entity.type || record.deleted) continue;
         if (record.revision === 0) continue;
         if (rows.has(record.syncId) || failed.has(record.syncId)) continue;
-        if (entity.covers && !entity.covers(record.syncId)) continue;
+        if (entity.covers && !(await entity.covers(record.syncId))) continue;
         if (
           record.errorHash === DELETED_HASH &&
           record.error !== "unavailable"
@@ -592,7 +592,7 @@ export class SyncEngine {
     });
     const retry: RemoteChange[] = [];
 
-    for (const change of this.sortChanges(changes)) {
+    for (const change of await this.sortChanges(changes)) {
       const entity = entities.get(change.entityType);
       if (!entity) continue;
       const key = replica.records.key(change.entityType, change.syncId);

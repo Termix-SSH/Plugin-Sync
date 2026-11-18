@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { Check, ChevronsUpDown, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { usePluginApi, useTranslation } from "@termix-ssh/plugin-sdk/frontend";
+import {
+  useCurrentUser,
+  usePluginApi,
+  useTranslation,
+} from "@termix-ssh/plugin-sdk/frontend";
 import {
   Popover,
   PopoverContent,
@@ -87,14 +91,14 @@ function AccountList({
   const { t } = useTranslation();
   return (
     <div className="flex flex-col">
-      <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <div className="border-b border-border px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
         {t("accounts.title")}
       </div>
-      <ul className="max-h-72 overflow-auto border-y border-border">
+      <ul className="max-h-72 overflow-auto">
         {rows.map((row) => (
           <li
             key={row.id}
-            className="group flex items-center gap-3 px-3 py-2 hover:bg-muted/60"
+            className="group flex items-center gap-2 px-3 py-2 hover:bg-muted/60"
           >
             <button
               type="button"
@@ -102,7 +106,7 @@ function AccountList({
               onClick={() => onPick(row.id)}
               className="flex min-w-0 flex-1 items-center gap-3 text-left disabled:cursor-default"
             >
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-accent-brand/30 bg-accent-brand/20 text-sm font-bold text-accent-brand">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-accent-brand/30 bg-accent-brand/20 text-xs font-bold text-accent-brand">
                 {row.title.charAt(0).toUpperCase() || "?"}
               </span>
               <span className="flex min-w-0 flex-1 flex-col">
@@ -139,9 +143,9 @@ function AccountList({
       <button
         type="button"
         onClick={onAdd}
-        className="flex items-center gap-3 px-3 py-2.5 text-left text-sm hover:bg-muted/60"
+        className="flex items-center gap-3 border-t border-border px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted/60 hover:text-foreground"
       >
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-dashed border-border text-muted-foreground">
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-dashed border-border text-muted-foreground">
           <Plus className="size-4" />
         </span>
         {addLabel}
@@ -175,8 +179,9 @@ function Shell({
       <PopoverContent
         side="right"
         align="end"
-        sideOffset={8}
-        className="w-80 p-0"
+        sideOffset={4}
+        alignOffset={-6}
+        className="w-72 p-0"
       >
         {children}
       </PopoverContent>
@@ -333,7 +338,12 @@ function WebSwitcher() {
     }
   }
 
-  const rows: Row[] = accounts.map((account) => ({
+  const me = useCurrentUser();
+  const list: WebAccount[] =
+    accounts.length > 0 || !me
+      ? accounts
+      : [{ userId: me.userId, username: me.username, current: true }];
+  const rows: Row[] = list.map((account) => ({
     id: account.userId,
     title: account.username,
     detail: account.current

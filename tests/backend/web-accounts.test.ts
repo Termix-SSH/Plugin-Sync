@@ -39,7 +39,7 @@ async function ask(
   side.currentUser = options.as ?? "alice";
   const cookie = [
     options.jwt ? `jwt=${options.jwt}` : "",
-    options.ring ? `termix_accounts=${options.ring}` : "",
+    options.ring ? `tmxp_sync_accounts=${options.ring}` : "",
   ]
     .filter(Boolean)
     .join("; ");
@@ -63,6 +63,7 @@ beforeEach(async () => {
     );
   }
   const mock = createMockCtx({
+    sandbox: true,
     pluginId: "sync",
     capabilities: ["secrets:own", "db:own"],
     db: db.database,
@@ -111,8 +112,10 @@ describe("accounts in one browser", () => {
       jwt: "alice-token",
     });
     expect(body).toEqual({ success: true });
-    expect(setCookies.some((c) => c.startsWith("termix_accounts="))).toBe(true);
-    expect(side.cookies.termix_accounts).toMatch(/^[a-f0-9]{64}$/);
+    expect(setCookies.some((c) => c.startsWith("tmxp_sync_accounts="))).toBe(
+      true,
+    );
+    expect(side.cookies.tmxp_sync_accounts).toMatch(/^[a-f0-9]{64}$/);
     expect(side.cookies.jwt).toBeUndefined();
     const stored = db.sqlite
       .prepare("SELECT token FROM p_sync_web_accounts")
