@@ -46,6 +46,8 @@ const MAX_PAGES = 500;
 const SAFETY_INTERVAL_MS = 5 * 60_000;
 const REFRESH_CHECK_MS = 24 * 60 * 60_000;
 const DELETED_HASH = "deleted";
+/** How often a pass reads the whole feed to drop rows the server lost. */
+export const FULL_CHECK_MS = 6 * 60 * 60_000;
 
 export interface EngineState {
   running: boolean;
@@ -89,6 +91,8 @@ export class SyncEngine {
   private serverTypes: Set<string> | null = null;
   private stopFns: Array<() => void> = [];
   private alerted = false;
+  private lastFullCheck = 0;
+  private fullNext = false;
   readonly state: EngineState = {
     running: false,
     pending: 0,
@@ -145,8 +149,12 @@ export class SyncEngine {
     this.timer.unref?.();
   }
 
-  /** Runs a pass now and waits for it. */
-  async syncNow(): Promise<void> {
+  /**
+   * Runs a pass now and waits for it. Full reads the whole feed, to drop rows
+   * the server no longer has.
+   */
+  async syncNow(options: { full?: boolean } = {}): Promise<void> {
+    if (options.full) this.fullNext = true;
     if (this.running) {
       this.again = true;
       while (this.running) await new Promise((r) => setTimeout(r, 100));
@@ -240,10 +248,19 @@ export class SyncEngine {
       const firstPass = fresh.knownTypes.length === 0;
       if (!firstPass) {
         await this.push(fresh);
-        await this.pull(fresh);
+        if (this.fullNext || Date.now() - this.lastFullCheck >= FULL_CHECK_MS) {
+          this.fullNext = false;
+          await this.fullCheck(fresh);
+          this.lastFullCheck = Date.now();
+        } else {
+          await this.pull(fresh);
+        }
       }
       await this.backfill((await this.getLink())!);
-      if (firstPass) await this.push((await this.getLink())!);
+      if (firstPass) {
+        await this.push((await this.getLink())!);
+        this.lastFullCheck = Date.now();
+      }
 
       this.backoffMs = 0;
       this.alerted = false;
@@ -540,6 +557,63 @@ export class SyncEngine {
     await this.updateLink({ cursor });
   }
 
+  /**
+   * Reads the whole feed from the start. A server restored from a backup or
+   * reset starts its feed over without deletes for the rows it lost, so a
+   * saved cursor never sees them go. Synced rows the feed no longer has are
+   * dropped; ones edited here are sent again instead.
+   */
+  private async fullCheck(link: SyncLinkInfo): Promise<void> {
+    const types = link.knownTypes.filter(
+      (type) => !link.disabledTypes.includes(type),
+    );
+    if (types.length === 0) return;
+    const { changes, cursor } = await this.fetchChanges(link, 0, types);
+    await this.apply(link, changes, false, true);
+    await this.updateLink({ cursor });
+
+    const seen = new Set(
+      changes.map((c) => this.host.replica.records.key(c.entityType, c.syncId)),
+    );
+    const { replica, entities } = this.host;
+    const userId = link.userId;
+    const resolvers = replica.resolvers(userId);
+    let removed = 0;
+    for (const record of (await replica.records.list(userId)).values()) {
+      if (!types.includes(record.entityType)) continue;
+      // A type the server stopped listing keeps its rows, like a normal pull.
+      if (this.serverTypes && !this.serverTypes.has(record.entityType))
+        continue;
+      if (record.deleted || record.revision <= 0) continue;
+      if (seen.has(replica.records.key(record.entityType, record.syncId)))
+        continue;
+      const entity = entities.get(record.entityType);
+      if (!entity) continue;
+      const local = await replica
+        .loadRow(record.entityType, userId, record.syncId, resolvers)
+        .catch(() => null);
+      if (local && !entity.readOnly && record.hash !== local.hash) {
+        // Edited here and not sent yet: create it on the server again.
+        await replica.records.put(userId, record.entityType, record.syncId, {
+          revision: 0,
+          hash: record.hash,
+          deleted: false,
+        });
+        continue;
+      }
+      await replica.deleteRow(record.entityType, userId, record.syncId);
+      await replica.records.put(userId, record.entityType, record.syncId, {
+        revision: record.revision,
+        hash: null,
+        deleted: true,
+      });
+      removed++;
+    }
+    if (removed) {
+      this.log.warn("Dropped rows the server no longer has", { removed });
+    }
+  }
+
   /** Pulls every row of types this device has not pulled before. */
   private async backfill(link: SyncLinkInfo): Promise<void> {
     if (!this.serverTypes) {
@@ -581,6 +655,8 @@ export class SyncEngine {
     link: SyncLinkInfo,
     changes: RemoteChange[],
     adopt: boolean,
+    /** The server's feed wins even with a lower revision, after a restore. */
+    full = false,
   ): Promise<void> {
     if (changes.length === 0) return;
     const userId = link.userId;
@@ -597,7 +673,14 @@ export class SyncEngine {
       if (!entity) continue;
       const key = replica.records.key(change.entityType, change.syncId);
       const record = records.get(key);
-      if (record && record.revision >= change.revision) continue;
+      if (
+        record &&
+        (full
+          ? record.revision === change.revision
+          : record.revision >= change.revision)
+      ) {
+        continue;
+      }
 
       try {
         if (!entity.readOnly) {

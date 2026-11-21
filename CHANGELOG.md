@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.1
+
+### Fixed
+
+- Rows a server no longer has, like after it was restored or reset, now leave a linked desktop too. Sync now checks the whole list, and the desktop does it on its own every few hours
+
 ## 1.3.0
 
 ### Changed

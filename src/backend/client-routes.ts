@@ -505,7 +505,7 @@ export function createClientRouter(
    */
   router.post("/link/sync", ...guard, async (req: Request, res: Response) => {
     const userId = userOf(req);
-    await manager.engineFor(userId).syncNow();
+    await manager.engineFor(userId).syncNow({ full: true });
     res.json(await statusBody(userId));
   });
 

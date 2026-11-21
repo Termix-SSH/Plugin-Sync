@@ -148,6 +148,40 @@ describe("after linking", () => {
     expect(server.names(SERVER_USER).a).toBe("edited after a restore");
   });
 
+  /** A server restored or reset: same rows, a new feed from seq 1, no deletes. */
+  function restartFeed(drop: string[]) {
+    for (const syncId of drop) server.remove(SERVER_USER, syncId);
+    server.recordsOf(SERVER_USER).clear();
+    server.seq = 0;
+    server.reconcile(SERVER_USER);
+  }
+
+  it("drops rows a reset server lost on a full check", async () => {
+    await linked();
+    for (let i = 0; i < 5; i++) {
+      server.put(SERVER_USER, "a", `one ${i}`);
+      server.reconcile(SERVER_USER);
+    }
+    await engine.syncNow();
+    restartFeed(["b"]);
+    await engine.syncNow();
+    expect(desktop.names(DESKTOP_USER).b).toBe("two");
+
+    await engine.syncNow({ full: true });
+    expect(desktop.names(DESKTOP_USER)).toEqual({ a: "one 4" });
+    expect(server.names(SERVER_USER)).toEqual({ a: "one 4" });
+  });
+
+  it("sends a row the reset server lost again when it was edited here", async () => {
+    await linked();
+    restartFeed(["b"]);
+    desktop.put(DESKTOP_USER, "b", "edited here");
+    await engine.syncNow({ full: true });
+    await engine.syncNow();
+    expect(desktop.names(DESKTOP_USER).b).toBe("edited here");
+    expect(server.names(SERVER_USER).b).toBe("edited here");
+  });
+
   it("does not let one refused change hold up the rest", async () => {
     await linked();
     server.refuse.add("bad");
